@@ -16,7 +16,8 @@ object UserProfileDAO {
             date_of_birth TEXT,
             profile_image TEXT,
             bio TEXT,
-            FOREIGN KEY (userID) REFERENCES ${UserDAO.TABLE_NAME}(userID) ON DELETE CASCADE
+            FOREIGN KEY (userID) REFERENCES ${UserDAO.TABLE_NAME}(userID) ON DELETE CASCADE,
+            UNIQUE (userID)
         )
     """
 
@@ -48,11 +49,11 @@ object UserProfileDAO {
                 UserProfileModel(
                     profileId = cursor.getInt(cursor.getColumnIndexOrThrow("profile_id")),
                     userId = cursor.getInt(cursor.getColumnIndexOrThrow("userID")),
-                    fullName = cursor.getString(cursor.getColumnIndexOrThrow("full_name")),
-                    phone = cursor.getString(cursor.getColumnIndexOrThrow("phone")),
-                    dateOfBirth = cursor.getString(cursor.getColumnIndexOrThrow("date_of_birth")),
+                    fullName = cursor.getString(cursor.getColumnIndexOrThrow("full_name")) ?: "",
+                    phone = cursor.getString(cursor.getColumnIndexOrThrow("phone")) ?: "",
+                    dateOfBirth = cursor.getString(cursor.getColumnIndexOrThrow("date_of_birth")) ?: "",
                     profileImage = cursor.getString(cursor.getColumnIndexOrThrow("profile_image")),
-                    bio = cursor.getString(cursor.getColumnIndexOrThrow("bio"))
+                    bio = cursor.getString(cursor.getColumnIndexOrThrow("bio")) ?: ""
                 )
             )
         }
@@ -75,11 +76,11 @@ object UserProfileDAO {
             profile = UserProfileModel(
                 profileId = cursor.getInt(cursor.getColumnIndexOrThrow("profile_id")),
                 userId = cursor.getInt(cursor.getColumnIndexOrThrow("userID")),
-                fullName = cursor.getString(cursor.getColumnIndexOrThrow("full_name")),
-                phone = cursor.getString(cursor.getColumnIndexOrThrow("phone")),
-                dateOfBirth = cursor.getString(cursor.getColumnIndexOrThrow("date_of_birth")),
+                fullName = cursor.getString(cursor.getColumnIndexOrThrow("full_name")) ?: "",
+                phone = cursor.getString(cursor.getColumnIndexOrThrow("phone")) ?: "",
+                dateOfBirth = cursor.getString(cursor.getColumnIndexOrThrow("date_of_birth")) ?: "",
                 profileImage = cursor.getString(cursor.getColumnIndexOrThrow("profile_image")),
-                bio = cursor.getString(cursor.getColumnIndexOrThrow("bio"))
+                bio = cursor.getString(cursor.getColumnIndexOrThrow("bio")) ?: ""
             )
         }
         cursor.close()

@@ -65,4 +65,49 @@ class DatabaseConnector(context: Context) :
         val db = writableDatabase
         return UserProfileDAO.deleteProfile(db, profileId)
     }
+
+    // New method to join tblUsers and tblUserProfiles
+    fun getUserProfileWithUserDetails(userId: Int): UserProfileWithDetails? {
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            """
+            SELECT u.userID, u.email, u.username, u.password, p.profile_id, p.full_name, p.phone, p.date_of_birth, p.profile_image, p.bio
+            FROM ${UserDAO.TABLE_NAME} u
+            JOIN ${UserProfileDAO.TABLE_NAME} p ON u.userID = p.userID
+            WHERE u.userID = ?
+            """,
+            arrayOf(userId.toString())
+        )
+        var profile: UserProfileWithDetails? = null
+        if (cursor.moveToFirst()) {
+            profile = UserProfileWithDetails(
+                userId = cursor.getInt(cursor.getColumnIndexOrThrow("userID")),
+                email = cursor.getString(cursor.getColumnIndexOrThrow("email")),
+                username = cursor.getString(cursor.getColumnIndexOrThrow("username")),
+                password = cursor.getString(cursor.getColumnIndexOrThrow("password")),
+                profileId = cursor.getInt(cursor.getColumnIndexOrThrow("profile_id")),
+                fullName = cursor.getString(cursor.getColumnIndexOrThrow("full_name")),
+                phone = cursor.getString(cursor.getColumnIndexOrThrow("phone")),
+                dateOfBirth = cursor.getString(cursor.getColumnIndexOrThrow("date_of_birth")),
+                profileImage = cursor.getString(cursor.getColumnIndexOrThrow("profile_image")),
+                bio = cursor.getString(cursor.getColumnIndexOrThrow("bio"))
+            )
+        }
+        cursor.close()
+        return profile
+    }
 }
+
+// New data class to hold joined data
+data class UserProfileWithDetails(
+    val userId: Int,
+    val email: String,
+    val username: String,
+    val password: String,
+    val profileId: Int,
+    val fullName: String?,
+    val phone: String?,
+    val dateOfBirth: String?,
+    val profileImage: String?,
+    val bio: String?
+)

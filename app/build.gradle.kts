@@ -99,5 +99,9 @@ android {
 
         // Review if needed
         implementation(libs.transport.api)
+        implementation(libs.coil.compose)
+        implementation(libs.androidx.lifecycle.viewmodel.compose)
+        implementation(libs.androidx.lifecycle.runtime.compose)
+
     }
 }

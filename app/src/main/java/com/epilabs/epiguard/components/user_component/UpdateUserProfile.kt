@@ -1,6 +1,12 @@
 package com.epilabs.epiguard.components.user_component
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -10,11 +16,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.epilabs.epiguard.database.DatabaseConnector
 import com.epilabs.epiguard.models.UserProfileModel
+import com.epilabs.epiguard.viewmodel.ProfileViewModel
 
 @Composable
 fun UpdateUserProfileForm(
@@ -25,13 +33,17 @@ fun UpdateUserProfileForm(
     name: String?,
     phone: String?,
     dob: String?,
-    bio: String?
+    bio: String?,
+    imageLauncher: (Intent) -> Unit,
+    profileViewModel: ProfileViewModel
 ) {
     val context = LocalContext.current
     val fullName = remember { mutableStateOf(name ?: "") }
     val userPhone = remember { mutableStateOf(phone ?: "") }
     val dateOfBirth = remember { mutableStateOf(dob ?: "") }
     val userBio = remember { mutableStateOf(bio ?: "") }
+    val profileImage = remember { mutableStateOf(existingProfileImage) }
+
     val dbHandler = DatabaseConnector(context)
 
     Column(
@@ -48,6 +60,18 @@ fun UpdateUserProfileForm(
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(20.dp))
+        Text(
+            text = "User ID: $existingUserId",
+            color = Color.Black,
+            fontSize = 15.sp,
+            modifier = Modifier.padding(4.dp)
+        )
+        Text(
+            text = "Profile ID: $existingProfileId",
+            color = Color.Black,
+            fontSize = 15.sp,
+            modifier = Modifier.padding(4.dp)
+        )
         TextField(
             value = fullName.value,
             onValueChange = { fullName.value = it },
@@ -75,6 +99,29 @@ fun UpdateUserProfileForm(
             singleLine = true
         )
         Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            onClick = {
+                val intent = Intent(Intent.ACTION_PICK).apply {
+                    type = "image/*"
+                }
+                imageLauncher(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Upload Profile Image", color = Color.White)
+        }
+        if (profileImage.value != null) {
+            Text("Image selected: ${profileImage.value}", color = Color.Black)
+        }
+        TextField(
+            value = if (profileImage.value == null) TextFieldValue() else TextFieldValue(profileImage.value!!),
+            onValueChange = { profileImage.value = it.text },
+            placeholder = { Text("Or enter Image URL") },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = TextStyle(color = Color.Black, fontSize = 15.sp),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(20.dp))
         TextField(
             value = userBio.value,
             onValueChange = { userBio.value = it },
@@ -91,7 +138,7 @@ fun UpdateUserProfileForm(
                 fullName = fullName.value,
                 phone = userPhone.value,
                 dateOfBirth = dateOfBirth.value,
-                profileImage = existingProfileImage ?: "",
+                profileImage = profileImage.value,
                 bio = userBio.value
             )
             val result = dbHandler.updateUserProfile(updatedProfile)

@@ -6,6 +6,6 @@ data class UserProfileModel(
     val fullName: String,
     val phone: String,
     val dateOfBirth: String,
-    val profileImage: String,
+    val profileImage: String? = null, // Can be file path, base64, or URL
     val bio: String
 )
