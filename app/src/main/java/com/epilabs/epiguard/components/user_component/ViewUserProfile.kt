@@ -1,7 +1,5 @@
 package com.epilabs.epiguard.components.user_component
 
-
-import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -18,14 +16,11 @@ import com.epilabs.epiguard.database.DatabaseConnector
 import com.epilabs.epiguard.models.UserProfileModel
 import java.net.URLEncoder
 
-
-
 @Composable
-fun ViewUserProfiles(navController: NavController) {
+fun ViewUserProfiles(navController: NavController, userId: Int) {
     val context = LocalContext.current
     val dbHandler = DatabaseConnector(context)
-    val userList: List<UserProfileModel> = dbHandler.getAllUserProfiles()
-
+    val userList: List<UserProfileModel> = dbHandler.getAllUserProfiles(userId)
 
     LazyColumn {
         itemsIndexed(userList) { index, user ->
@@ -35,12 +30,11 @@ fun ViewUserProfiles(navController: NavController) {
                     .fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(6.dp),
                 onClick = {
-                    val profileImage = user.profileImage?.let { URLEncoder.encode(it, "UTF-8") } ?: ""
-                    val fullName = user.fullName?.let { URLEncoder.encode(it, "UTF-8") } ?: ""
-                    val phone = user.phone?.let { URLEncoder.encode(it, "UTF-8") } ?: ""
-                    val dateOfBirth = user.dateOfBirth?.let { URLEncoder.encode(it, "UTF-8") } ?: ""
-                    val bio = user.bio?.let { URLEncoder.encode(it, "UTF-8") } ?: ""
-
+                    val profileImage = user.profileImage.let { URLEncoder.encode(it, "UTF-8") } ?: ""
+                    val fullName = user.fullName.let { URLEncoder.encode(it, "UTF-8") } ?: ""
+                    val phone = user.phone.let { URLEncoder.encode(it, "UTF-8") } ?: ""
+                    val dateOfBirth = user.dateOfBirth.let { URLEncoder.encode(it, "UTF-8") } ?: ""
+                    val bio = user.bio.let { URLEncoder.encode(it, "UTF-8") } ?: ""
                     navController.navigate(
                         "update_user_profile/${user.userId}/${user.profileId}/$profileImage/$fullName/$phone/$dateOfBirth/$bio"
                     )

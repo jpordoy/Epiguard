@@ -1,6 +1,5 @@
 package com.epilabs.epiguard.components.user_component
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -14,19 +13,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.epilabs.epiguard.database.DatabaseConnector
 import com.epilabs.epiguard.models.UserProfileModel
 
 @Composable
-fun AddUserProfileForm() {
+fun AddUserProfileForm(navController: NavController, userId: Int) {
     val context = LocalContext.current
-    val userId = remember { mutableStateOf(TextFieldValue()) }
     val fullName = remember { mutableStateOf(TextFieldValue()) }
     val phone = remember { mutableStateOf(TextFieldValue()) }
     val dateOfBirth = remember { mutableStateOf(TextFieldValue()) }
     val profileImage = remember { mutableStateOf(TextFieldValue()) }
     val bio = remember { mutableStateOf(TextFieldValue()) }
-
     val dbHandler = DatabaseConnector(context)
 
     Column(
@@ -34,7 +32,7 @@ fun AddUserProfileForm() {
             .fillMaxSize()
             .padding(all = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = "Add User Profile",
@@ -42,19 +40,7 @@ fun AddUserProfileForm() {
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
-
         Spacer(modifier = Modifier.height(20.dp))
-
-        TextField(
-            value = userId.value,
-            onValueChange = { userId.value = it },
-            placeholder = { Text("Enter User ID (integer)") },
-            modifier = Modifier.fillMaxWidth(),
-            textStyle = TextStyle(color = Color.Black, fontSize = 15.sp),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
         TextField(
             value = fullName.value,
             onValueChange = { fullName.value = it },
@@ -100,23 +86,20 @@ fun AddUserProfileForm() {
             singleLine = false,
             maxLines = 3
         )
-
         Spacer(modifier = Modifier.height(20.dp))
-
         Button(onClick = {
             try {
                 val profile = UserProfileModel(
-                    userId = userId.value.text.toInt(),
+                    userId = userId,
                     fullName = fullName.value.text,
                     phone = phone.value.text,
                     dateOfBirth = dateOfBirth.value.text,
                     profileImage = profileImage.value.text,
                     bio = bio.value.text
                 )
-
                 dbHandler.insertUserProfile(profile)
-
                 Toast.makeText(context, "Profile Added to Database", Toast.LENGTH_SHORT).show()
+                navController.navigate("dashboard/$userId")
             } catch (e: Exception) {
                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
             }

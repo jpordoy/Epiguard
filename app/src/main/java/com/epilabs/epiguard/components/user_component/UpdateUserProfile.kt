@@ -1,6 +1,5 @@
 package com.epilabs.epiguard.components.user_component
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -33,7 +32,6 @@ fun UpdateUserProfileForm(
     val userPhone = remember { mutableStateOf(phone ?: "") }
     val dateOfBirth = remember { mutableStateOf(dob ?: "") }
     val userBio = remember { mutableStateOf(bio ?: "") }
-
     val dbHandler = DatabaseConnector(context)
 
     Column(
@@ -41,7 +39,7 @@ fun UpdateUserProfileForm(
             .fillMaxSize()
             .padding(30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = "Update User Profile",
@@ -99,7 +97,7 @@ fun UpdateUserProfileForm(
             val result = dbHandler.updateUserProfile(updatedProfile)
             if (result > 0) {
                 Toast.makeText(context, "Profile Updated", Toast.LENGTH_SHORT).show()
-                navController.navigate("dashboard")
+                navController.navigate("dashboard/$existingUserId")
             } else {
                 Toast.makeText(context, "Update Failed", Toast.LENGTH_SHORT).show()
             }
@@ -108,9 +106,9 @@ fun UpdateUserProfileForm(
         }
         Spacer(modifier = Modifier.height(15.dp))
         Button(onClick = {
-            dbHandler.deleteUserProfile(existingUserId)
+            dbHandler.deleteUserProfile(existingProfileId)
             Toast.makeText(context, "Profile Deleted", Toast.LENGTH_SHORT).show()
-            navController.navigate("dashboard")
+            navController.navigate("dashboard/$existingUserId")
         }) {
             Text("Delete Profile", color = Color.White)
         }

@@ -49,30 +49,55 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-}
 
-dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
-    implementation(libs.androidx.material3.android)
-    implementation(libs.androidx.ui.tooling.preview.android)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    packaging {
+        // Exclude duplicate META-INF/NOTICE.md and META-INF/LICENSE.md files
+        resources {
+            excludes += "/META-INF/{NOTICE,NOTICE.md,LICENSE,LICENSE.md}"
+        }
+        // Package libandroidx.graphics.path.so as-is
+        jniLibs {
+            pickFirsts += "libandroidx.graphics.path.so"
+        }
+    }
 
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.material)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.navigation.compose)
 
+
+    dependencies {
+        // Jetpack Compose, Navigation, Material 3
+        implementation(libs.androidx.core.ktx)
+        implementation(libs.androidx.appcompat)
+        implementation(libs.material)
+        implementation(libs.androidx.recyclerview)
+        implementation(libs.androidx.constraintlayout)
+        implementation(libs.androidx.lifecycle.livedata.ktx)
+        implementation(libs.androidx.lifecycle.viewmodel.ktx)
+        implementation(libs.androidx.navigation.fragment.ktx)
+        implementation(libs.androidx.navigation.ui.ktx)
+        implementation(libs.androidx.material3.android)
+        implementation(libs.androidx.ui.tooling.preview.android)
+        testImplementation(libs.junit)
+        androidTestImplementation(libs.androidx.junit)
+        androidTestImplementation(libs.androidx.espresso.core)
+
+        // CRUD and Compose
+        implementation(libs.androidx.ui)
+        implementation(libs.androidx.material)
+        implementation(libs.androidx.lifecycle.viewmodel.compose)
+        implementation(libs.androidx.room.runtime)
+        implementation(libs.androidx.room.ktx)
+        implementation(libs.androidx.activity.compose)
+        implementation(libs.androidx.navigation.compose)
+
+        // Direct dependencies
+        implementation(libs.androidx.navigation.compose.v277)
+        implementation(libs.androidx.activity.compose.v192)
+        implementation(libs.android.mail)
+        implementation(libs.android.activation)
+        implementation(libs.jbcrypt)
+        implementation(libs.kotlinx.coroutines.android)
+
+        // Review if needed
+        implementation(libs.transport.api)
+    }
 }
