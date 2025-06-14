@@ -3,6 +3,7 @@ package com.epilabs.epiguard.database
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.epilabs.epiguard.models.ContactModel
 import com.epilabs.epiguard.models.UserProfileModel
 
 class DatabaseConnector(context: Context) :
@@ -10,17 +11,20 @@ class DatabaseConnector(context: Context) :
 
     companion object {
         private const val DATABASE_NAME = "epiguardDb"
-        private const val DATABASE_VERSION = 2 // Increment version to trigger onUpgrade
+        private const val DATABASE_VERSION = 3 // Incremented to 3
     }
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(UserDAO.CREATE_TABLE)
         db.execSQL(UserProfileDAO.CREATE_TABLE)
+        db.execSQL(ContactDAO.CREATE_TABLE)
+
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS ${UserProfileDAO.TABLE_NAME}")
         db.execSQL("DROP TABLE IF EXISTS ${UserDAO.TABLE_NAME}")
+        db.execSQL("DROP TABLE IF EXISTS ${ContactDAO.TABLE_NAME}")
         onCreate(db)
     }
 
@@ -46,9 +50,20 @@ class DatabaseConnector(context: Context) :
         return UserProfileDAO.insertProfile(db, profile)
     }
 
+    // User Contact methods
+    fun insertContact(contact: ContactModel): Long {
+        val db = writableDatabase
+        return ContactDAO.insertContact(db, contact)
+    }
+
     fun getAllUserProfiles(userId: Int): List<UserProfileModel> {
         val db = readableDatabase
         return UserProfileDAO.getAllProfiles(db, userId)
+    }
+    //Get All Contacts
+    fun getAllContacts(contactId: Int): List<ContactModel> {
+        val db = readableDatabase
+        return ContactDAO.getAllContacts(db, contactId)
     }
 
     fun getUserProfileById(profileId: Int): UserProfileModel? {
@@ -56,14 +71,32 @@ class DatabaseConnector(context: Context) :
         return UserProfileDAO.getProfileById(db, profileId)
     }
 
+    //Get Contact by Id
+    fun getContactById(contactID: Int): ContactModel? {
+        val db = readableDatabase
+        return ContactDAO.getContactById(db, contactID)
+    }
+
     fun updateUserProfile(profile: UserProfileModel): Int {
         val db = writableDatabase
         return UserProfileDAO.updateProfile(db, profile)
     }
 
+    //Update Contact
+    fun updateContact(contact: ContactModel): Int {
+        val db = writableDatabase
+        return ContactDAO.updateContact(db, contact)
+    }
+
     fun deleteUserProfile(profileId: Int): Int {
         val db = writableDatabase
         return UserProfileDAO.deleteProfile(db, profileId)
+    }
+
+    //Delete contact By Id
+    fun deleteContact(contactID: Int): Int {
+        val db = writableDatabase
+        return ContactDAO.deleteContact(db, contactID)
     }
 
     // New method to join tblUsers and tblUserProfiles

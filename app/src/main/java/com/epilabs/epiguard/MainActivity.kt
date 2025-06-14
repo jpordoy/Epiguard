@@ -18,15 +18,23 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.epilabs.epiguard.components.auth_component.SignInForm
 import com.epilabs.epiguard.components.auth_component.RegisterForm
 import com.epilabs.epiguard.components.auth_component.OTPVerificationForm
 import com.epilabs.epiguard.components.user_component.AddUserProfileForm
 import com.epilabs.epiguard.components.user_component.UpdateUserProfileForm
 import com.epilabs.epiguard.components.user_component.ViewUserProfiles
+import com.epilabs.epiguard.components.contacts_component.AddContactForm
+import com.epilabs.epiguard.components.contacts_component.ViewContacts
+import com.epilabs.epiguard.components.contacts_component.UpdateContactForm
 import com.epilabs.epiguard.Dashboard
 import com.epilabs.epiguard.database.DatabaseConnector
 import com.epilabs.epiguard.viewmodel.ProfileViewModel
+import com.epilabs.epiguard.viewmodel.ContactViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.epilabs.epiguard.utils.saveImageToInternalStorage
 import java.io.File
@@ -55,14 +63,23 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            val profileViewModel: ProfileViewModel = viewModel() // Single instance for the activity
+            val profileViewModel: ProfileViewModel = viewModel() // Single instance for user profiles
+            val contactViewModel: ContactViewModel = viewModel() // Single instance for contacts
+
+            // State to track which ViewModel to update (profile or contact)
+            var imageTarget by remember { mutableStateOf("profile") } // Default to profile
+
             val imageLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == android.app.Activity.RESULT_OK) {
                     result.data?.data?.let { uri ->
                         try {
                             val filePath = saveImageToInternalStorage(this, uri)
                             Log.i(TAG, "Image saved to: $filePath")
-                            profileViewModel.updateProfileImage(filePath) // Update ViewModel state
+                            // Update the appropriate ViewModel based on imageTarget
+                            when (imageTarget) {
+                                "profile" -> profileViewModel.updateProfileImage(filePath)
+                                "contact" -> contactViewModel.updateContactImage(filePath)
+                            }
                             Toast.makeText(this, "Image saved successfully", Toast.LENGTH_SHORT).show()
                         } catch (e: Exception) {
                             Log.e(TAG, "Error saving image: ${e.message}")
@@ -107,8 +124,25 @@ class MainActivity : ComponentActivity() {
                     AddUserProfileForm(
                         navController = navController,
                         userId = backStackEntry.arguments?.getInt("userId") ?: -1,
-                        imageLauncher = { intent -> imageLauncher.launch(intent) },
-                        profileViewModel = profileViewModel // Pass the ViewModel instance
+                        imageLauncher = { intent ->
+                            imageTarget = "profile"
+                            imageLauncher.launch(intent)
+                        },
+                        profileViewModel = profileViewModel
+                    )
+                }
+                composable(
+                    route = "add_contact/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    AddContactForm(
+                        navController = navController,
+                        userID = backStackEntry.arguments?.getInt("userId") ?: -1, // Fixed from userID
+                        imageLauncher = { intent ->
+                            imageTarget = "contact"
+                            imageLauncher.launch(intent)
+                        },
+                        contactViewModel = contactViewModel
                     )
                 }
                 composable(
@@ -118,7 +152,7 @@ class MainActivity : ComponentActivity() {
                     ViewUserProfiles(
                         navController = navController,
                         userId = backStackEntry.arguments?.getInt("userId") ?: -1,
-                        profileViewModel = profileViewModel // Pass the ViewModel instance
+                        profileViewModel = profileViewModel
                     )
                 }
                 composable(
@@ -142,8 +176,57 @@ class MainActivity : ComponentActivity() {
                         phone = backStackEntry.arguments?.getString("phone"),
                         dob = backStackEntry.arguments?.getString("dateOfBirth"),
                         bio = backStackEntry.arguments?.getString("bio"),
-                        imageLauncher = { intent -> imageLauncher.launch(intent) },
-                        profileViewModel = profileViewModel // Pass the ViewModel instance
+                        imageLauncher = { intent ->
+                            imageTarget = "profile"
+                            imageLauncher.launch(intent)
+                        },
+                        profileViewModel = profileViewModel
+                    )
+                }
+                composable(
+                    route = "view_contacts/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    ViewContacts(
+                        navController = navController,
+                        userID = backStackEntry.arguments?.getInt("userId") ?: -1,
+                        contactViewModel = contactViewModel
+                    )
+                }
+                composable(
+                    route = "update_contact/{userId}/{contactId}/{profileImage}/{firstname}/{lastname}/{contact}/{alertType}/{medicalExperience}/{status}/{primaryCarer}/{timestamp}",
+                    arguments = listOf(
+                        navArgument("userId") { type = NavType.IntType },
+                        navArgument("contactId") { type = NavType.IntType },
+                        navArgument("profileImage") { type = NavType.StringType; nullable = true },
+                        navArgument("firstname") { type = NavType.StringType; nullable = true },
+                        navArgument("lastname") { type = NavType.StringType; nullable = true },
+                        navArgument("contact") { type = NavType.StringType; nullable = true },
+                        navArgument("alertType") { type = NavType.StringType; nullable = true },
+                        navArgument("medicalExperience") { type = NavType.StringType; nullable = true },
+                        navArgument("status") { type = NavType.StringType; nullable = true },
+                        navArgument("primaryCarer") { type = NavType.StringType; nullable = true },
+                        navArgument("timestamp") { type = NavType.StringType; nullable = true }
+                    )
+                ) { backStackEntry ->
+                    UpdateContactForm(
+                        navController = navController,
+                        userID = backStackEntry.arguments?.getInt("userId") ?: -1,
+                        contactID = backStackEntry.arguments?.getInt("contactId") ?: -1,
+                        profileImage = backStackEntry.arguments?.getString("profileImage"),
+                        firstname = backStackEntry.arguments?.getString("firstname"),
+                        lastname = backStackEntry.arguments?.getString("lastname"),
+                        contact = backStackEntry.arguments?.getString("contact"),
+                        alertType = backStackEntry.arguments?.getString("alertType"),
+                        medicalExperience = backStackEntry.arguments?.getString("medicalExperience"),
+                        status = backStackEntry.arguments?.getString("status"),
+                        primaryCarer = backStackEntry.arguments?.getString("primaryCarer"),
+                        timestamp = backStackEntry.arguments?.getString("timestamp"),
+                        imageLauncher = { intent ->
+                            imageTarget = "contact"
+                            imageLauncher.launch(intent)
+                        },
+                        contactViewModel = contactViewModel
                     )
                 }
             }

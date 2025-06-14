@@ -51,7 +51,8 @@ object UserProfileDAO {
                     userId = cursor.getInt(cursor.getColumnIndexOrThrow("userID")),
                     fullName = cursor.getString(cursor.getColumnIndexOrThrow("full_name")) ?: "",
                     phone = cursor.getString(cursor.getColumnIndexOrThrow("phone")) ?: "",
-                    dateOfBirth = cursor.getString(cursor.getColumnIndexOrThrow("date_of_birth")) ?: "",
+                    dateOfBirth = cursor.getString(cursor.getColumnIndexOrThrow("date_of_birth"))
+                        ?: "",
                     profileImage = cursor.getString(cursor.getColumnIndexOrThrow("profile_image")),
                     bio = cursor.getString(cursor.getColumnIndexOrThrow("bio")) ?: ""
                 )
