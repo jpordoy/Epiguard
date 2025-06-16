@@ -32,5 +32,14 @@ fun Dashboard(navController: NavController, userId: Int) {
         Button(onClick = { navController.navigate("view_user_profile/$userId") }) {
             Text("View Profiles", color = Color.White)
         }
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(onClick = { navController.navigate("add_contact/$userId") }) {
+            Text("Add Contact", color = Color.White)
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+        Button(onClick = { navController.navigate("view_contacts/$userId") }) {
+            Text("View Profiles", color = Color.White)
+        }
     }
 }
