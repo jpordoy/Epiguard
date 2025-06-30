@@ -1,17 +1,21 @@
 package com.epilabs.epiguard
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import android.widget.Toast
 
 @Composable
 fun Dashboard(navController: NavController, userId: Int) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -25,21 +29,130 @@ fun Dashboard(navController: NavController, userId: Int) {
             fontSize = 20.sp
         )
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = { navController.navigate("add_user_profile/$userId") }) {
+        Button(
+            onClick = {
+                if (userId != -1) {
+                    navController.navigate("add_user_profile/$userId")
+                } else {
+                    Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+                    navController.navigate("sign_in")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("Add Profile", color = Color.White)
         }
         Spacer(modifier = Modifier.height(10.dp))
-        Button(onClick = { navController.navigate("view_user_profile/$userId") }) {
-            Text("View Profiles", color = Color.White)
+        Button(
+            onClick = {
+                if (userId != -1) {
+                    navController.navigate("view_user_profile/$userId")
+                } else {
+                    Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+                    navController.navigate("sign_in")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("My Profile", color = Color.White)
         }
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = { navController.navigate("add_contact/$userId") }) {
-            Text("Add Contact", color = Color.White)
+        Button(
+            onClick = {
+                if (userId != -1) {
+                    navController.navigate("add_contact/$userId")
+                } else {
+                    Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+                    navController.navigate("sign_in")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Add New Contact", color = Color.White)
         }
-
         Spacer(modifier = Modifier.height(10.dp))
-        Button(onClick = { navController.navigate("view_contacts/$userId") }) {
-            Text("View Profiles", color = Color.White)
+        Button(
+            onClick = {
+                if (userId != -1) {
+                    navController.navigate("view_contacts/$userId")
+                } else {
+                    Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+                    navController.navigate("sign_in")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("View Contacts", color = Color.White)
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            onClick = {
+                if (userId != -1) {
+                    navController.navigate("add_seizure/$userId")
+                } else {
+                    Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+                    navController.navigate("sign_in")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Add Seizure", color = Color.White)
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Button(
+            onClick = {
+                if (userId != -1) {
+                    navController.navigate("view_seizures/$userId")
+                } else {
+                    Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+                    navController.navigate("sign_in")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("View Seizures", color = Color.White)
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            onClick = {
+                if (userId != -1) {
+                    navController.navigate("add_raw_data/$userId")
+                } else {
+                    Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+                    navController.navigate("sign_in")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Add Raw Data", color = Color.White)
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Button(
+            onClick = {
+                if (userId != -1) {
+                    navController.navigate("view_raw_data/$userId")
+                } else {
+                    Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+                    navController.navigate("sign_in")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("View Raw Data", color = Color.White)
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            onClick = {
+                if (userId != -1) {
+                    navController.navigate("seizure_detector/$userId")
+                } else {
+                    Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+                    navController.navigate("sign_in")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Detect Seizure", color = Color.White)
         }
     }
 }

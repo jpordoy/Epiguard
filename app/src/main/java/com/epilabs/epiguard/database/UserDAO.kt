@@ -2,6 +2,7 @@ package com.epilabs.epiguard.database
 
 import android.database.sqlite.SQLiteDatabase
 import android.content.ContentValues
+import android.util.Log
 import org.mindrot.jbcrypt.BCrypt
 
 object UserDAO {
@@ -25,35 +26,66 @@ object UserDAO {
             put("password", hashedPassword)
             put("isVerified", 0)
         }
-        return db.insert(TABLE_NAME, null, values)
+        return try {
+            val result = db.insertOrThrow(TABLE_NAME, null, values)
+            Log.d("UserDAO", "User inserted successfully: email=$email, result=$result")
+            result
+        } catch (e: Exception) {
+            Log.e("UserDAO", "Constraint violation: ${e.message}")
+            -1
+        }
     }
 
     fun verifyUser(db: SQLiteDatabase, email: String): Boolean {
         val values = ContentValues().apply {
             put("isVerified", 1)
         }
-        val rowsAffected = db.update(TABLE_NAME, values, "email = ?", arrayOf(email))
-        return rowsAffected > 0
+        return try {
+            val rowsAffected = db.update(TABLE_NAME, values, "email = ?", arrayOf(email))
+            Log.d("UserDAO", "Verify user: email=$email, rowsAffected=$rowsAffected")
+            rowsAffected > 0
+        } catch (e: Exception) {
+            Log.e("UserDAO", "Verify user failed: ${e.message}")
+            false
+        }
     }
 
     fun signInUser(db: SQLiteDatabase, identifier: String, password: String): Int? {
-        val cursor = db.query(
-            TABLE_NAME,
-            arrayOf("userID", "isVerified", "password"),
-            "(email = ? OR username = ?)",
-            arrayOf(identifier, identifier),
-            null,
-            null,
-            null
-        )
-        return if (cursor.moveToFirst()) {
-            val userId = cursor.getInt(cursor.getColumnIndexOrThrow("userID"))
-            val isVerified = cursor.getInt(cursor.getColumnIndexOrThrow("isVerified"))
-            val storedPassword = cursor.getString(cursor.getColumnIndexOrThrow("password"))
+        val cursor = try {
+            db.query(
+                TABLE_NAME,
+                arrayOf("userID", "isVerified", "password"),
+                "(email = ? OR username = ?)",
+                arrayOf(identifier, identifier),
+                null,
+                null,
+                null
+            )
+        } catch (e: Exception) {
+            Log.e("UserDAO", "Sign-in query failed: ${e.message}")
+            return null
+        }
+        return try {
+            if (cursor.moveToFirst()) {
+                val userId = cursor.getInt(cursor.getColumnIndexOrThrow("userID"))
+                val isVerified = cursor.getInt(cursor.getColumnIndexOrThrow("isVerified"))
+                val storedPassword = cursor.getString(cursor.getColumnIndexOrThrow("password"))
+                cursor.close()
+                if (isVerified == 1 && BCrypt.checkpw(password, storedPassword)) {
+                    Log.d("UserDAO", "Sign-in successful: identifier=$identifier, userId=$userId")
+                    userId
+                } else {
+                    Log.d("UserDAO", "Sign-in failed: isVerified=$isVerified")
+                    null
+                }
+            } else {
+                cursor.close()
+                Log.d("UserDAO", "Sign-in failed: No user found for identifier=$identifier")
+                null
+            }
+        } catch (e: Exception) {
             cursor.close()
-            if (isVerified == 1 && BCrypt.checkpw(password, storedPassword)) userId else null
-        } else {
-            cursor.close()
+            Log.e("UserDAO", "Sign-in exception: ${e.message}")
             null
         }
     }

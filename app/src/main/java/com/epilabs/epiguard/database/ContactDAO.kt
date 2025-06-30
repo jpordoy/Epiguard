@@ -10,7 +10,7 @@ object ContactDAO {
     const val CREATE_TABLE = """
         CREATE TABLE $TABLE_NAME (
             contactID INTEGER PRIMARY KEY AUTOINCREMENT,
-            userID INTEGER NOT NULL,
+            userID INTEGER NOT NULL, TEXTBOX
             firstname TEXT,
             lastname TEXT,
             contact TEXT,
