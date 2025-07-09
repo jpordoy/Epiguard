@@ -24,7 +24,6 @@ import com.epilabs.epiguard.ui.components.InputTextField
 import com.epilabs.epiguard.ui.components.MobileTextField
 import com.epilabs.epiguard.ui.components.PhoneTextField
 import com.epilabs.epiguard.ui.theme.EpiGuardTheme
-import com.epilabs.epiguard.ui.components.PillButtonSelectionComponent
 import com.epilabs.epiguard.ui.components.Spacing
 
 @Composable
@@ -91,16 +90,7 @@ fun SpacerFormExample() {
             )
         }
 
-        // GenderSelectionComponent
-        PillButtonSelectionComponent(
-            firstOption = "Male",
-            secondOption = "Female",
-            firstIconRes = R.drawable.user45,
-            secondIconRes = R.drawable.user45,
-            selectedOption = selectedGender,
-            onOptionSelected = { gender -> selectedGender = gender },
-            modifier = Modifier.fillMaxWidth()
-        )
+
 
         // Spacer between groups
         Spacer(Modifier.height(Spacing.medium))

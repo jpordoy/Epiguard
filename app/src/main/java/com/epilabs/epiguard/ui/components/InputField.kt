@@ -27,7 +27,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.epilabs.epiguard.R
-import com.epilabs.epiguard.components.contacts_component.ContactInfoForm
 import com.epilabs.epiguard.ui.theme.MyColors
 import com.epilabs.epiguard.ui.theme.MyTypes
 import com.epilabs.epiguard.ui.components.Spacing

@@ -28,10 +28,15 @@ fun UpdateContactForm(
     firstname: String?,
     lastname: String?,
     contact: String?,
+    email: String?,
     alertType: String?,
-    medicalExperience: String?,
+    about: String?,
+    epilepsyFirstAid: String?,
+    cPR: String?,
+    mentalHealthFirstAid: String?,
     status: String?,
     primaryCarer: String?,
+    relationship: String?,
     timestamp: String?,
     imageLauncher: (Intent) -> Unit,
     contactViewModel: ContactViewModel
@@ -40,10 +45,15 @@ fun UpdateContactForm(
     val firstName = remember { mutableStateOf(firstname ?: "") }
     val lastName = remember { mutableStateOf(lastname ?: "") }
     val contactInfo = remember { mutableStateOf(contact ?: "") }
+    val email = remember { mutableStateOf(contact ?: "") }
     val alertTypeState = remember { mutableStateOf(alertType ?: "") }
-    val medicalExperienceState = remember { mutableStateOf(medicalExperience ?: "") }
+    val aboutState = remember { mutableStateOf(about ?: "") }
+    val epilepsyFirstAidState = remember { mutableStateOf(epilepsyFirstAid ?: "") }
+    val cPRState = remember { mutableStateOf(cPR ?: "") }
+    val mentalHealthFirstAidState = remember { mutableStateOf(mentalHealthFirstAid ?: "") }
     val statusState = remember { mutableStateOf(status ?: "") }
     val primaryCarerState = remember { mutableStateOf(primaryCarer ?: "") }
+    val relationshipState = remember { mutableStateOf(relationship ?: "") }
     val timestampState = remember { mutableStateOf(timestamp ?: "") }
     val profileImageState = remember { mutableStateOf(profileImage) }
 
@@ -71,6 +81,12 @@ fun UpdateContactForm(
         )
         Text(
             text = "Contact ID: $contactID",
+            color = Color.Black,
+            fontSize = 15.sp,
+            modifier = Modifier.padding(4.dp)
+        )
+        Text(
+            text = "email: $email",
             color = Color.Black,
             fontSize = 15.sp,
             modifier = Modifier.padding(4.dp)
@@ -135,8 +151,8 @@ fun UpdateContactForm(
         )
         Spacer(modifier = Modifier.height(20.dp))
         TextField(
-            value = medicalExperienceState.value,
-            onValueChange = { medicalExperienceState.value = it },
+            value = aboutState.value,
+            onValueChange = { aboutState.value = it },
             placeholder = { Text("Enter medical experience") },
             modifier = Modifier.fillMaxWidth(),
             textStyle = TextStyle(color = Color.Black, fontSize = 15.sp),
@@ -152,11 +168,48 @@ fun UpdateContactForm(
             textStyle = TextStyle(color = Color.Black, fontSize = 15.sp),
             singleLine = true
         )
+
+        Spacer(modifier = Modifier.height(20.dp))
+        TextField(
+            value = epilepsyFirstAidState.value,
+            onValueChange = { epilepsyFirstAidState.value = it },
+            placeholder = { Text("Enter epilepsyFirstAid") },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = TextStyle(color = Color.Black, fontSize = 15.sp),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        TextField(
+            value = cPRState.value,
+            onValueChange = { cPRState.value = it },
+            placeholder = { Text("Enter cPR") },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = TextStyle(color = Color.Black, fontSize = 15.sp),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        TextField(
+            value = mentalHealthFirstAidState.value,
+            onValueChange = { mentalHealthFirstAidState.value = it },
+            placeholder = { Text("Enter mentalHealthFirstAidState") },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = TextStyle(color = Color.Black, fontSize = 15.sp),
+            singleLine = true
+        )
         Spacer(modifier = Modifier.height(20.dp))
         TextField(
             value = primaryCarerState.value,
             onValueChange = { primaryCarerState.value = it },
             placeholder = { Text("Enter primary carer") },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = TextStyle(color = Color.Black, fontSize = 15.sp),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        TextField(
+            value = relationshipState.value,
+            onValueChange = { relationshipState.value = it },
+            placeholder = { Text("Enter relationship") },
             modifier = Modifier.fillMaxWidth(),
             textStyle = TextStyle(color = Color.Black, fontSize = 15.sp),
             singleLine = true
@@ -178,11 +231,16 @@ fun UpdateContactForm(
                 firstname = firstName.value,
                 lastname = lastName.value,
                 contact = contactInfo.value,
+                email = email.value,
                 profileImage = profileImageState.value ?: "",
                 alertType = alertTypeState.value,
-                medicalExperience = medicalExperienceState.value,
+                about = aboutState.value,
+                epilepsyFirstAid = epilepsyFirstAidState.value,
+                cPR = cPRState.value,
+                mentalHealthFirstAid = mentalHealthFirstAidState.value,
                 status = statusState.value,
                 primaryCarer = primaryCarerState.value,
+                relationship = relationshipState.value,
                 timestamp = timestampState.value
             )
             val result = dbHandler.updateContact(updatedContact)

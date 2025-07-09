@@ -15,7 +15,7 @@ class DatabaseConnector(context: Context) :
 
     companion object {
         private const val DATABASE_NAME = "epiguardDb"
-        private const val DATABASE_VERSION = 5
+        private const val DATABASE_VERSION = 8      // ← bumped from 5 ➜ 6
         private const val TAG = "DatabaseConnector"
     }
 

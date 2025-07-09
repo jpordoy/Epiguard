@@ -11,7 +11,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.epilabs.epiguard.R
 import com.epilabs.epiguard.ui.components.CardRemindActive
-import com.epilabs.epiguard.ui.components.PillButtonSelectionComponent
 import com.epilabs.epiguard.ui.theme.EpiGuardTheme
 
 @Composable
@@ -61,14 +60,5 @@ fun EventListScreenPreview() {
         EventReminderScreen()
         EventListScreen()
 
-        //PillButtons
-        PillButtonSelectionComponent(
-            firstOption = "Male",
-            secondOption = "Female",
-            firstIconRes = R.drawable.user45,
-            secondIconRes = R.drawable.user45,
-            selectedOption = "Male",
-            onOptionSelected = {}
-        )
     }
 }

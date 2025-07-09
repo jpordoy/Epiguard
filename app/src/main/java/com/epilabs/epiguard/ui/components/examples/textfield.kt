@@ -54,10 +54,10 @@ fun TextFieldCustom(
             unfocusedContainerColor = AppColors.color_Gray_50
         ),
         textStyle = TextStyle(color = AppColors.color_black, fontSize = AppTypes.type_Typography_Body_Medium.fontSize),
-        shape = RoundedCornerShape(15.dp), // Matches ComboBoxCustom
+        shape = RoundedCornerShape(5.dp), // Matches ComboBoxCustom
         modifier = modifier
             .fillMaxWidth()
-            .requiredHeight(60.dp) // Matches PhoneTextField height
+            .requiredHeight(35.dp) // Matches PhoneTextField height
     )
 }
 
@@ -69,6 +69,6 @@ private fun TextFieldCustomPreview() {
         value = text,
         onValueChange = { text = it },
         label = "Name",
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(8.dp)
     )
 }

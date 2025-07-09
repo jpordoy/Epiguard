@@ -85,13 +85,17 @@ fun ViewContacts(
                             val firstname = URLEncoder.encode(contact.firstname ?: "", "UTF-8")
                             val lastname = URLEncoder.encode(contact.lastname ?: "", "UTF-8")
                             val contactInfo = URLEncoder.encode(contact.contact ?: "", "UTF-8")
+                            val email = URLEncoder.encode(contact.email ?: "", "UTF-8")
                             val alertType = URLEncoder.encode(contact.alertType ?: "", "UTF-8")
-                            val medicalExperience = URLEncoder.encode(contact.medicalExperience ?: "", "UTF-8")
+                            val about = URLEncoder.encode(contact.about ?: "", "UTF-8")
+                            val epilepsyFirstAid = URLEncoder.encode(contact.epilepsyFirstAid ?: "", "UTF-8")
+                            val cPR = URLEncoder.encode(contact.cPR ?: "", "UTF-8")
+                            val mentalHealthFirstAid = URLEncoder.encode(contact.mentalHealthFirstAid ?: "", "UTF-8")
                             val status = URLEncoder.encode(contact.status ?: "", "UTF-8")
                             val primaryCarer = URLEncoder.encode(contact.primaryCarer ?: "", "UTF-8")
                             val timestamp = URLEncoder.encode(contact.timestamp ?: "", "UTF-8")
                             navController.navigate(
-                                "update_contact/${contact.userID}/${contact.contactID}/$profileImage/$firstname/$lastname/$contactInfo/$alertType/$medicalExperience/$status/$primaryCarer/$timestamp"
+                                "update_contact/${contact.userID}/${contact.contactID}/$profileImage/$firstname/$lastname/$contactInfo/$alertType/$about/$epilepsyFirstAid/$cPR/$mentalHealthFirstAid/$status/$primaryCarer/$timestamp"
                             )
                         }
                     ) {
@@ -134,11 +138,24 @@ fun ViewContacts(
                                 letterSpacing = (-0.5).sp,
                                 textAlign = TextAlign.Center
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Email: ${contact.email ?: "N/A"}",
+                                color = Color(0xFF7A5AF8),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                letterSpacing = (-0.5).sp,
+                                textAlign = TextAlign.Center
+                            )
                             Spacer(modifier = Modifier.height(12.dp))
                             ContactDetailRow(label = "User ID", value = contact.userID.toString())
                             ContactDetailRow(label = "Contact ID", value = contact.contactID.toString())
+                            ContactDetailRow(label = "Email", value = contact.email.toString())
                             ContactDetailRow(label = "Alert Type", value = contact.alertType ?: "N/A")
-                            ContactDetailRow(label = "Medical Experience", value = contact.medicalExperience ?: "N/A")
+                            ContactDetailRow(label = "About", value = contact.about ?: "N/A")
+                            ContactDetailRow(label = "epilepsyFirstAid", value = contact.epilepsyFirstAid ?: "N/A")
+                            ContactDetailRow(label = "cPR", value = contact.cPR ?: "N/A")
+                            ContactDetailRow(label = "mentalHealthFirstAid", value = contact.mentalHealthFirstAid ?: "N/A")
                             ContactDetailRow(label = "Status", value = contact.status ?: "N/A")
                             ContactDetailRow(label = "Primary Carer", value = contact.primaryCarer ?: "N/A")
                             ContactDetailRow(label = "Timestamp", value = contact.timestamp ?: "N/A")

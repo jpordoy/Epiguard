@@ -6,11 +6,15 @@ data class ContactModel(
     val firstname: String,
     val lastname: String,
     val contact: String,
+    val email: String,
     val profileImage: String? = null, // Can be file path, base64, or URL
     val alertType: String,
-    val medicalExperience: String,
+    val about: String,
+    val epilepsyFirstAid: String,
+    val cPR: String,
+    val mentalHealthFirstAid: String,
     val status: String,
     val primaryCarer: String,
+    val relationship: String,
     val timestamp: String,
-
     )

@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredHeight
@@ -38,133 +39,38 @@ fun NavBar(
             .background(MyColors.color_white),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Navigation Items
-        Box(
+        // Navigation Items Row
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .weight(1f),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Detector Item
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = 20.dp)
-                    .requiredWidth(70.dp)
-                    .requiredHeight(41.dp)
-                    .clickable { onItemSelected("Detector") }
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.camera),
-                        contentDescription = "Detector Icon",
-                        colorFilter = ColorFilter.tint(
-                            if (selectedItem == "Detector") MyColors.color_violet else MyColors.color_grey
-                        ),
-                        modifier = Modifier.requiredSize(21.dp)
-                    )
-                    Text(
-                        text = "Detector",
-                        color = if (selectedItem == "Detector") MyColors.color_violet else MyColors.color_grey,
-                        textAlign = TextAlign.Center,
-                        style = MyTypes.typography.labelSmall,
-                        modifier = Modifier.requiredWidth(60.dp)
-                    )
-                }
-            }
-
-            // Contacts Item
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = 108.dp)
-                    .requiredWidth(70.dp)
-                    .requiredHeight(41.dp)
-                    .clickable { onItemSelected("Contacts") }
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.contacts),
-                        contentDescription = "Contacts Icon",
-                        colorFilter = ColorFilter.tint(
-                            if (selectedItem == "Contacts") MyColors.color_violet else MyColors.color_grey
-                        ),
-                        modifier = Modifier.requiredSize(21.dp)
-                    )
-                    Text(
-                        text = "Contacts",
-                        color = if (selectedItem == "Contacts") MyColors.color_violet else MyColors.color_grey,
-                        textAlign = TextAlign.Center,
-                        style = MyTypes.typography.labelSmall
-                    )
-                }
-            }
-
-            // Home Item
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = 197.dp)
-                    .requiredWidth(70.dp)
-                    .requiredHeight(41.dp)
-                    .clickable { onItemSelected("Home") }
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.home),
-                        contentDescription = "Home Icon",
-                        colorFilter = ColorFilter.tint(
-                            if (selectedItem == "Home") MyColors.color_violet else MyColors.color_grey
-                        ),
-                        modifier = Modifier.requiredSize(21.dp)
-                    )
-                    Text(
-                        text = "Home",
-                        color = if (selectedItem == "Home") MyColors.color_violet else MyColors.color_grey,
-                        textAlign = TextAlign.Center,
-                        style = MyTypes.typography.labelSmall
-                    )
-                }
-            }
-
-            // Menu Item
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = 285.dp)
-                    .requiredWidth(70.dp)
-                    .requiredHeight(41.dp)
-                    .clickable { onItemSelected("Menu") }
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.menu),
-                        contentDescription = "Menu Icon",
-                        colorFilter = ColorFilter.tint(
-                            if (selectedItem == "Menu") MyColors.color_violet else MyColors.color_grey
-                        ),
-                        modifier = Modifier.requiredSize(21.dp)
-                    )
-                    Text(
-                        text = "Menu",
-                        color = if (selectedItem == "Menu") MyColors.color_violet else MyColors.color_grey,
-                        textAlign = TextAlign.Center,
-                        style = MyTypes.typography.labelSmall,
-                        modifier = Modifier.requiredWidth(34.dp)
-                    )
-                }
-            }
+            NavBarItem(
+                iconId = R.drawable.camera,
+                label = "Detector",
+                isSelected = selectedItem == "Detector",
+                onClick = { onItemSelected("Detector") }
+            )
+            NavBarItem(
+                iconId = R.drawable.contacts,
+                label = "Contacts",
+                isSelected = selectedItem == "Contacts",
+                onClick = { onItemSelected("Contacts") }
+            )
+            NavBarItem(
+                iconId = R.drawable.home,
+                label = "Home",
+                isSelected = selectedItem == "Home",
+                onClick = { onItemSelected("Home") }
+            )
+            NavBarItem(
+                iconId = R.drawable.menu,
+                label = "Menu",
+                isSelected = selectedItem == "Menu",
+                onClick = { onItemSelected("Menu") }
+            )
         }
 
         // Divider Line (iPhone-style swipe bar)
@@ -174,6 +80,38 @@ fun NavBar(
                 .requiredHeight(5.dp)
                 .clip(RoundedCornerShape(5.dp))
                 .background(MyColors.color_grey)
+        )
+    }
+}
+
+@Composable
+fun NavBarItem(
+    iconId: Int,
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .requiredWidth(70.dp)
+            .requiredHeight(41.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Image(
+            painter = painterResource(id = iconId),
+            contentDescription = "$label Icon",
+            colorFilter = ColorFilter.tint(
+                if (isSelected) MyColors.color_violet else MyColors.color_grey
+            ),
+            modifier = Modifier.requiredSize(21.dp)
+        )
+        Text(
+            text = label,
+            color = if (isSelected) MyColors.color_violet else MyColors.color_grey,
+            textAlign = TextAlign.Center,
+            style = MyTypes.typography.labelSmall
         )
     }
 }

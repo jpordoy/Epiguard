@@ -27,7 +27,7 @@ object AppColors {
     val color_black = Color.Black
     val darkblue = Color(0xFF254EDB)
     val myCustomColor = Color(0xFF183188) // Matches the 0xAARRGGBB format
-
+    val wallpaper = Color(0xFF254EDB)
 
     // Linear gradient for blue-violet
     val blue_violet_gradient = Brush.linearGradient(
