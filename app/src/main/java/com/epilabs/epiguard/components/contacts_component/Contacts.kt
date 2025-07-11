@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
@@ -18,10 +20,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -105,6 +109,60 @@ val sampleContacts = listOf(
         relationship = "Partner"
     )
 )
+
+@Composable
+fun Component1(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .requiredWidth(width = 375.dp)
+            .requiredHeight(height = 70.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color.White)
+        )
+        Box(
+            modifier = Modifier
+                .align(alignment = Alignment.TopStart)
+                .offset(x = 15.dp, y = 15.dp)
+                .requiredSize(size = 40.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.group_354__2_),
+                contentDescription = "Profile",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(shape = RoundedCornerShape(12.dp))
+            )
+        }
+
+        Icon(
+            painter = painterResource(id = R.drawable.bell),
+            contentDescription = "icn/general/notifications",
+            modifier = Modifier
+                .requiredSize(size = 24.dp)
+                .align(alignment = Alignment.CenterEnd)
+                .offset(x = ((-90).dp), y = 0.dp)
+        )
+        Icon(
+            painter = painterResource(id = R.drawable.lock),
+            contentDescription = "icn/general/search",
+            modifier = Modifier
+                .requiredSize(size = 24.dp)
+                .align(alignment = Alignment.CenterEnd)
+                .offset(x = ((-55).dp), y = 0.dp)
+        )
+        Image(
+            painter = painterResource(id = R.drawable.guy_4),
+            contentDescription = "profile",
+            modifier = Modifier
+                .requiredSize(size = 24.dp)
+                .align(alignment = Alignment.CenterEnd)
+                .offset(x = ((-15).dp), y = 0.dp)
+        )
+    }
+}
 
 @Composable
 fun ContactCard(contact: ContactModel, modifier: Modifier = Modifier) {
@@ -244,7 +302,7 @@ fun ContactCard(contact: ContactModel, modifier: Modifier = Modifier) {
                             fontWeight = FontWeight.Medium
                         ),
                         modifier = Modifier
-                          .wrapContentHeight(align = Alignment.CenterVertically)
+                            .wrapContentHeight(align = Alignment.CenterVertically)
                     )
                 }
             }
@@ -277,7 +335,7 @@ fun ContactCard(contact: ContactModel, modifier: Modifier = Modifier) {
                                 .wrapContentHeight(align = Alignment.CenterVertically)
                         )
                         Text(
-                            text = contact.relationship ?: "Unknown",
+                            text = contact.relationship,
                             color = Color(0xff0066ff),
                             lineHeight = 8.73.em,
                             style = TextStyle(fontSize = 11.sp),
@@ -295,25 +353,34 @@ fun ContactCard(contact: ContactModel, modifier: Modifier = Modifier) {
 fun ViewContactScreen(
     userID: Int,
     navController: NavController,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val selectedItem = remember { mutableStateOf("Contacts") }
-    val dbHandler = DatabaseConnector(context)
-    val contacts = remember { mutableStateOf<List<ContactModel>>(emptyList()) }
-
-    // Fetch contacts when the composable is first created
-    LaunchedEffect(Unit) {
-        val db = dbHandler.writableDatabase
-        contacts.value = ContactDAO.getAllContacts(db, userID)
-        db.close()
+    modifier: Modifier = Modifier,
+    contactsOverride: @Composable () -> MutableState<List<ContactModel>> = {
+        val context = LocalContext.current
+        val dbHandler = DatabaseConnector(context)
+        val contacts = remember { mutableStateOf<List<ContactModel>>(emptyList()) }
+        LaunchedEffect(Unit) {
+            val db = dbHandler.writableDatabase
+            contacts.value = ContactDAO.getAllContacts(db, userID)
+            db.close()
+        }
+        contacts
     }
+) {
+    val selectedItem = remember { mutableStateOf("Contacts") }
+    val contacts = contactsOverride()
 
     Column(
         modifier = modifier
             .requiredHeight(height = 812.dp)
             .background(AppColors.color_Gray_50)
     ) {
+        // New custom header
+        Component1(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+        )
+
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.Top),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -488,14 +555,11 @@ fun ViewContactScreen(
 @Preview(widthDp = 375, heightDp = 812)
 @Composable
 private fun ViewContactScreenPreview() {
-    val contactsState = remember { mutableStateOf(sampleContacts) }
+    val contacts = remember { mutableStateOf(sampleContacts) }
     ViewContactScreen(
         userID = 0,
         navController = rememberNavController(),
-        modifier = Modifier
+        modifier = Modifier,
+        contactsOverride = { contacts }
     )
-    // Override contacts state for preview
-    LaunchedEffect(Unit) {
-        contactsState.value = sampleContacts
-    }
 }

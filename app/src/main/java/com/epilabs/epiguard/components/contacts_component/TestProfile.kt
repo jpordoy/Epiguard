@@ -44,9 +44,3 @@ fun ProfileScreenTemplate(
         )
     }
 }
-
-@Preview(widthDp = 375, heightDp = 812)
-@Composable
-private fun ProfileScreenTemplatePreview() {
-    ProfileScreenTemplate()
-}

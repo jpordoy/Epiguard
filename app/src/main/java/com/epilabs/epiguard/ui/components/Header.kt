@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
@@ -31,7 +30,6 @@ fun Component1(modifier: Modifier = Modifier) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(shape = RoundedCornerShape(24.dp))
                 .background(color = Color.White)
         )
         Box(
@@ -41,7 +39,7 @@ fun Component1(modifier: Modifier = Modifier) {
                 .requiredSize(size = 40.dp)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.company_s_logo),
+                painter = painterResource(id = R.drawable.group_354__2_),
                 contentDescription = "Profile",
                 modifier = Modifier
                     .fillMaxSize()
@@ -55,15 +53,15 @@ fun Component1(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .requiredSize(size = 24.dp)
                 .align(alignment = Alignment.CenterEnd)
-                .offset(x = ((-99).dp), y = 0.dp) // 24.dp (third icon) + 25.dp + 24.dp (second icon) + 25.dp + 15.dp (right edge)
+                .offset(x = ((-90).dp), y = 0.dp) // 24.dp (third icon) + 25.dp + 24.dp (second icon) + 25.dp + 15.dp (right edge)
         )
         Icon(
-            painter = painterResource(id = R.drawable.phone),
+            painter = painterResource(id = R.drawable.lock),
             contentDescription = "icn/general/search",
             modifier = Modifier
                 .requiredSize(size = 24.dp)
                 .align(alignment = Alignment.CenterEnd)
-                .offset(x = ((-50).dp), y = 0.dp) // 24.dp (third icon) + 25.dp + 15.dp (right edge)
+                .offset(x = ((-55).dp), y = 0.dp) // 24.dp (third icon) + 25.dp + 15.dp (right edge)
         )
         Image(
             painter = painterResource(id = R.drawable.guy_4),
