@@ -89,4 +89,33 @@ object UserDAO {
             null
         }
     }
+
+    fun getUserFirstName(db: SQLiteDatabase, userId: Int): String? {
+        val cursor = try {
+            db.query(
+                TABLE_NAME,
+                arrayOf("username"),
+                "userID = ?",
+                arrayOf(userId.toString()),
+                null,
+                null,
+                null
+            )
+        } catch (e: Exception) {
+            Log.e("UserDAO", "Failed to fetch username: ${e.message}")
+            return null
+        }
+        return try {
+            if (cursor.moveToFirst()) {
+                cursor.getString(cursor.getColumnIndexOrThrow("username"))
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("UserDAO", "Error fetching username: ${e.message}")
+            null
+        } finally {
+            cursor.close()
+        }
+    }
 }

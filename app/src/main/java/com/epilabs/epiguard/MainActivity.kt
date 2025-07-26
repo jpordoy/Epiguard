@@ -6,10 +6,14 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -22,16 +26,18 @@ import com.epilabs.epiguard.components.auth_component.SignInForm
 import com.epilabs.epiguard.components.contacts_component.AddContactDebugForm
 import com.epilabs.epiguard.components.contacts_component.UpdateContactForm
 import com.epilabs.epiguard.components.contacts_component.ViewContactScreen
+import com.epilabs.epiguard.components.testlab_component.MobileUI
+import com.epilabs.epiguard.components.testlab_component.ModelClassificationScreen
+import com.epilabs.epiguard.components.testlab_component.VideoPlayerScreen
 import com.epilabs.epiguard.components.user_component.AddUserProfileForm
 import com.epilabs.epiguard.components.user_component.UpdateUserProfileForm
 import com.epilabs.epiguard.components.user_component.ViewUserProfiles
 import com.epilabs.epiguard.database.DatabaseConnector
+import com.epilabs.epiguard.ui.components.Frame3
 import com.epilabs.epiguard.utils.saveImageToInternalStorage
 import com.epilabs.epiguard.viewmodel.ContactViewModel
 import com.epilabs.epiguard.viewmodel.ProfileViewModel
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
+import com.epilabs.epiguard.viewmodel.VideoViewModel
 
 class MainActivity : ComponentActivity() {
     private val TAG = "MainActivity"
@@ -88,6 +94,25 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         userId = backStackEntry.arguments?.getInt("userId") ?: -1
                     )
+                }
+                composable(
+                    route = "upload_video/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    MobileUI(userId = userId, navController = navController)
+                }
+                composable(
+                    route = "video_player/{videoId}/{userId}",
+                    arguments = listOf(
+                        navArgument("videoId") { type = NavType.IntType },
+                        navArgument("userId") { type = NavType.IntType }
+                    )
+                ) { backStackEntry ->
+                    val videoId = backStackEntry.arguments?.getInt("videoId") ?: -1
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    val viewModel: VideoViewModel = viewModel(factory = VideoViewModel.Factory(LocalContext.current, userId))
+                    VideoPlayerScreen(navController = navController, videoId = videoId, viewModel = viewModel)
                 }
                 composable(
                     route = "add_user_profile/{userId}",
@@ -155,6 +180,13 @@ class MainActivity : ComponentActivity() {
                         profileViewModel = profileViewModel
                     )
                 }
+
+                composable("model_classification/{userId}") { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getString("userId")?.toIntOrNull() ?: 1
+                    ModelClassificationScreen(userId = userId, navController = navController)
+                }
+
+
                 composable(
                     route = "view_contacts/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
@@ -166,7 +198,14 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 composable(
-                    route = "update_contact/{userId}/{contactId}/{profileImage}/{firstname}/{lastname}/{contact}/{email}/{alertType}/{about}/{epilepsyFirstAid}/{cPR}/{mentalHealthFirstAid}/{status}/{primaryCarer}/{timestamp}",
+                    route = "model_details/{modelName}",
+                    arguments = listOf(navArgument("modelName") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val modelName = backStackEntry.arguments?.getString("modelName") ?: ""
+                    Frame3(navController = navController, modelName = modelName)
+                }
+                composable(
+                    route = "update_contact/{userId}/{contactId}/{profileImage}/{firstname}/{lastname}/{contact}/{email}/{alertType}/{about}/{epilepsyFirstAid}/{cPR}/{mentalHealthFirstAid}/{status}/{primaryCarer}/{relationship}/{timestamp}",
                     arguments = listOf(
                         navArgument("userId") { type = NavType.IntType },
                         navArgument("contactId") { type = NavType.IntType },

@@ -2,284 +2,194 @@ package com.epilabs.epiguard.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import com.epilabs.epiguard.R
-import com.epilabs.epiguard.ui.theme.EpiGuardTheme
-import com.epilabs.epiguard.ui.theme.MyColors
-import com.epilabs.epiguard.ui.theme.MyTypes
-import com.epilabs.epiguard.ui.theme.TextboxColors
-import com.epilabs.epiguard.ui.theme.TextboxTypes
+import com.epilabs.epiguard.ui.AppColors
+import com.epilabs.epiguard.ui.AppTypes
 
 @Composable
-fun InputTextField(
-    modifier: Modifier = Modifier,
-    label: String = "Label",
-    value: String = "",
-    onValueChange: (String) -> Unit = {},
-    isEnabled: Boolean = true,
-    isFocused: Boolean = false
-) {
-    Box(
+fun Frame1000004459(modifier: Modifier = Modifier) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
         modifier = modifier
-            .fillMaxWidth()
-            .height(60.dp)
+            .requiredWidth(width = 368.dp)
+            .background(AppColors.color_Gray_100)
+
     ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            enabled = isEnabled,
-            label = {
-                Text(
-                    text = label,
-                    color = TextboxColors.gray600,
-                    style = TextboxTypes.bodyLarge400
-                )
-            },
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = TextboxColors.gray900,
-                unfocusedTextColor = TextboxColors.gray900,
-                focusedLabelColor = TextboxColors.gray600,
-                unfocusedLabelColor = TextboxColors.primary500,
-                cursorColor = TextboxColors.primary500,
-                focusedIndicatorColor = TextboxColors.primary500,
-                unfocusedIndicatorColor = TextboxColors.gray100,
-                disabledIndicatorColor = TextboxColors.gray100,
-                focusedContainerColor = TextboxColors.gray50,
-                unfocusedContainerColor = TextboxColors.gray50
-            ),
-            textStyle = TextStyle(color = TextboxColors.gray900),
-            shape = RoundedCornerShape(14.dp),
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-
-@Composable
-fun PhoneTextField(
-    modifier: Modifier = Modifier,
-    label: String = "Phone",
-    value: String = "",
-    countryCode: String = "+380",
-    onValueChange: (String) -> Unit = {},
-    isEnabled: Boolean = true,
-    isFocused: Boolean = false
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(60.dp)
-    ) {
-        OutlinedTextField(
-            value = "$countryCode $value",
-            onValueChange = { newValue ->
-                val cleaned = newValue.replace(countryCode, "").trim()
-                onValueChange(cleaned)
-            },
-            enabled = isEnabled,
-            label = {
-                Text(
-                    text = label,
-                    color = TextboxColors.gray600,
-                    style = TextboxTypes.bodyLarge400
-                )
-            },
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = TextboxColors.gray900,
-                unfocusedTextColor = TextboxColors.gray900,
-                focusedLabelColor = TextboxColors.gray600,
-                unfocusedLabelColor = TextboxColors.primary500,
-                cursorColor = TextboxColors.primary500,
-                focusedIndicatorColor = TextboxColors.primary500,
-                unfocusedIndicatorColor = TextboxColors.gray100,
-                disabledIndicatorColor = TextboxColors.gray100,
-                focusedContainerColor = TextboxColors.gray50,
-                unfocusedContainerColor = TextboxColors.gray50
-            ),
-            textStyle = TextStyle(color = TextboxColors.gray900),
-            shape = RoundedCornerShape(14.dp),
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-
-@Composable
-fun DropdownTextField(
-    modifier: Modifier = Modifier,
-    label: String = "Select",
-    value: String = "",
-    onValueChange: (String) -> Unit = {},
-    isEnabled: Boolean = true,
-    isFocused: Boolean = false
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(60.dp)
-    ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            enabled = isEnabled,
-            label = {
-                Text(
-                    text = label,
-                    color = TextboxColors.gray600,
-                    style = TextboxTypes.bodyLarge400
-                )
-            },
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = TextboxColors.gray900,
-                unfocusedTextColor = TextboxColors.gray900,
-                focusedLabelColor = TextboxColors.gray600,
-                unfocusedLabelColor = TextboxColors.primary500,
-                cursorColor = TextboxColors.primary500,
-                focusedIndicatorColor = TextboxColors.primary500,
-                unfocusedIndicatorColor = TextboxColors.gray100,
-                disabledIndicatorColor = TextboxColors.gray100,
-                focusedContainerColor = TextboxColors.gray50,
-                unfocusedContainerColor = TextboxColors.gray50
-            ),
-            textStyle = TextStyle(color = TextboxColors.gray900),
-            shape = RoundedCornerShape(14.dp),
-            trailingIcon = {
+        Text(
+            text = "Our Services",
+            color = Color(0xff094067),
+            lineHeight = 1.2.em,
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium),
+            modifier = Modifier
+                .requiredWidth(width = 139.dp)
+                .requiredHeight(height = 32.dp)
+                .wrapContentHeight(align = Alignment.CenterVertically))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .requiredWidth(width = 78.dp)
+                    .clip(shape = RoundedCornerShape(12.dp))
+                    .background(color = AppColors.color_white)
+            ) {
                 Image(
                     painter = painterResource(id = R.drawable.user45),
-                    contentDescription = "Dropdown",
+                    contentDescription = "glyph_hospital 1",
                     modifier = Modifier
-                        .size(24.dp)
-                        .clickable { /* Trigger dropdown menu */ }
-                )
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-@Preview()
-@Composable
-private fun InputTextFieldPreview() {
-    EpiGuardTheme {
-        InputTextField()
-    }
-}
-
-data class NavItem(
-    val route: String,
-    val label: String,
-    val iconResId: Int,
-    val contentDescription: String
-)
-
-@Composable
-fun BottomNavigation(
-    navController: NavHostController,
-    currentRoute: String?,
-    modifier: Modifier = Modifier
-) {
-    val navItems = listOf(
-        NavItem("search", "Search", R.drawable.sms, "Search Icon"),
-        NavItem("appointments", "Appointments", R.drawable.sms, "icon clock"),
-        NavItem("explore", "Explore", R.drawable.sms, "Vector"),
-        NavItem("profile", "Profile", R.drawable.sms, "icon profile")
-    )
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(83.dp)
-            .background(Color.Companion.White.copy(alpha = 0.92f))
-    ) {
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Companion.CenterVertically
-        ) {
-            navItems.forEach { item ->
-                NavigationItem(
-                    item = item,
-                    isSelected = currentRoute == item.route,
-                    onClick = {
-                        if (currentRoute != item.route) {
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.startDestinationId)
-                                launchSingleTop = true
-                            }
-                        }
-                    }
-                )
+                        .requiredSize(size = 56.dp)
+                        .clip(shape = RoundedCornerShape(12.dp))
+                        .padding(vertical = 18.dp))
+                Text(
+                    text = "Hospital",
+                    color = Color(0xff094067),
+                    lineHeight = 2.em,
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium),
+                    modifier = Modifier
+                        .wrapContentHeight(align = Alignment.CenterVertically))
+            }
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .requiredWidth(width = 78.dp)
+                    .clip(shape = RoundedCornerShape(12.dp))
+                    .background(color = AppColors.color_white)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.guy1),
+                    contentDescription = "aid-case (1) 1",
+                    modifier = Modifier
+                        .requiredSize(size = 56.dp)
+                        .clip(shape = RoundedCornerShape(12.dp))
+                        .padding(horizontal = 10.dp,
+                            vertical = 13.dp))
+                Text(
+                    text = "Medicines",
+                    color = Color(0xff094067),
+                    lineHeight = 2.em,
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium),
+                    modifier = Modifier
+                        .wrapContentHeight(align = Alignment.CenterVertically))
+            }
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .requiredWidth(width = 78.dp)
+                    .clip(shape = RoundedCornerShape(12.dp))
+                    .background(color = AppColors.color_white)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.user45),
+                    contentDescription = "ambulance (1) 1",
+                    modifier = Modifier
+                        .requiredSize(size = 56.dp)
+                        .clip(shape = RoundedCornerShape(12.dp))
+                        .padding(horizontal = 10.dp,
+                            vertical = 11.dp))
+                Text(
+                    text = "Ambulance",
+                    color = Color(0xff094067),
+                    lineHeight = 2.em,
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium),
+                    modifier = Modifier
+                        .wrapContentHeight(align = Alignment.CenterVertically))
+            }
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .requiredWidth(width = 78.dp)
+                    .clip(shape = RoundedCornerShape(12.dp))
+                    .background(color = AppColors.color_white)
+                    .padding(horizontal = 4.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.mindfulness_1),
+                    contentDescription = "mindfulness 1",
+                    modifier = Modifier
+                        .requiredSize(size = 56.dp)
+                        .clip(shape = RoundedCornerShape(12.dp))
+                        .padding(all = 10.dp))
+                Text(
+                    text = "Health",
+                    color = Color(0xff094067),
+                    textAlign = TextAlign.Center,
+                    lineHeight = 1.5.em,
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(align = Alignment.CenterVertically))
             }
         }
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Preview(widthDp = 368, heightDp = 128)
 @Composable
-fun NavigationItem(
-    item: NavItem,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .size(70.dp)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Companion.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.Companion.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(id = item.iconResId),
-                contentDescription = item.contentDescription,
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isSelected) MyColors.color_violet.copy(alpha = 0.1f)
-                        else Color.Companion.Transparent
-                    )
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = item.label,
-                color = if (isSelected) MyColors.color_violet else MyColors.color_grey,
-                textAlign = TextAlign.Companion.Center,
-                style = MyTypes.typography.labelSmall
-            )
-        }
-    }
+private fun Frame1000004459Preview() {
+    Frame1000004459(Modifier)
 }

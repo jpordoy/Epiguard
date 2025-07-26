@@ -20,9 +20,7 @@ import com.epilabs.epiguard.ui.components.CardRemindActive
 import com.epilabs.epiguard.ui.components.CardRemindAdd
 import com.epilabs.epiguard.ui.components.DropdownTextField
 import com.epilabs.epiguard.ui.components.EmailTextField
-import com.epilabs.epiguard.ui.components.InputTextField
 import com.epilabs.epiguard.ui.components.MobileTextField
-import com.epilabs.epiguard.ui.components.PhoneTextField
 import com.epilabs.epiguard.ui.theme.EpiGuardTheme
 import com.epilabs.epiguard.ui.components.Spacing
 
@@ -67,27 +65,7 @@ fun SpacerFormExample() {
         Column(
             verticalArrangement = Arrangement.spacedBy(Spacing.medium)
         ) {
-            InputTextField(
-                label = "Owner Name",
-                value = name,
-                onValueChange = { name = it },
-                modifier = Modifier.fillMaxWidth()
-            )
 
-            PhoneTextField(
-                label = "Owner Phone",
-                value = phone,
-                countryCode = "+380",
-                onValueChange = { phone = it },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            DropdownTextField(
-                label = "Pet Type",
-                value = petType,
-                onValueChange = { petType = it },
-                modifier = Modifier.fillMaxWidth()
-            )
         }
 
 

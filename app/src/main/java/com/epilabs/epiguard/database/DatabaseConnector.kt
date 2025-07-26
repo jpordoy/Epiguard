@@ -9,13 +9,16 @@ import com.epilabs.epiguard.models.RawDataModel
 import com.epilabs.epiguard.models.SeizureModel
 import com.epilabs.epiguard.models.UserProfileModel
 import com.epilabs.epiguard.models.SeizureWithRawData
+import com.epilabs.epiguard.models.UserProfileWithDetails
+import com.epilabs.epiguard.models.VideoModel
+
 
 class DatabaseConnector(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         private const val DATABASE_NAME = "epiguardDb"
-        private const val DATABASE_VERSION = 8      // ← bumped from 5 ➜ 6
+        private const val DATABASE_VERSION = 9      // ← bumped from 5 ➜ 6
         private const val TAG = "DatabaseConnector"
     }
 
@@ -26,10 +29,13 @@ class DatabaseConnector(context: Context) :
         db.execSQL(ContactDAO.CREATE_TABLE)
         db.execSQL(RawDataDAO.CREATE_TABLE)
         db.execSQL(SeizureDAO.CREATE_TABLE)
+        db.execSQL(UploadVideoDAO.CREATE_TABLE) // Add videos table
+
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         Log.d(TAG, "Upgrading database from version $oldVersion to $newVersion")
+        db.execSQL("DROP TABLE IF EXISTS ${UploadVideoDAO.TABLE_NAME}")
         db.execSQL("DROP TABLE IF EXISTS ${SeizureDAO.TABLE_NAME}")
         db.execSQL("DROP TABLE IF EXISTS ${RawDataDAO.TABLE_NAME}")
         db.execSQL("DROP TABLE IF EXISTS ${ContactDAO.TABLE_NAME}")
@@ -589,17 +595,26 @@ class DatabaseConnector(context: Context) :
         Log.d(TAG, "Retrieved ${list.size} seizures with raw data")
         return list
     }
+
+    // Video methods
+    fun insertVideo(video: VideoModel): Long {
+        return UploadVideoDAO.insertVideo(writableDatabase, video)
+    }
+
+    fun getAllVideos(userId: Int): List<VideoModel> {
+        return UploadVideoDAO.getAllVideos(readableDatabase, userId)
+    }
+
+    fun getOldestVideo(userId: Int): VideoModel? {
+        return UploadVideoDAO.getOldestVideo(readableDatabase, userId)
+    }
+
+    fun deleteVideo(id: Int): Int {
+        return UploadVideoDAO.deleteVideo(writableDatabase, id)
+    }
+
+    fun getTotalVideoSize(userId: Int): Long {
+        return UploadVideoDAO.getTotalVideoSize(readableDatabase, userId)
+    }
 }
 
-data class UserProfileWithDetails(
-    val userId: Int,
-    val email: String,
-    val username: String,
-    val password: String,
-    val profileId: Int,
-    val fullName: String?,
-    val phone: String?,
-    val dateOfBirth: String?,
-    val profileImage: String?,
-    val bio: String?
-)
