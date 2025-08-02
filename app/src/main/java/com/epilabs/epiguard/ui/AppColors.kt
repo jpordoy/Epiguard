@@ -1,5 +1,6 @@
 package com.epilabs.epiguard.ui
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
@@ -40,4 +41,15 @@ object AppColors {
         start = androidx.compose.ui.geometry.Offset(0f, 0f), // Left
         end = androidx.compose.ui.geometry.Offset(301f, 0f)  // Right, matching 301.dp width
     )
+
+    val blue_violet_gradient1 = Brush.linearGradient(
+        colors = listOf(
+            Color(0xFF4552CB), // Start: Dark blue
+            Color(0xFF4596EA)  // End: Lighter blue
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(301f, 0f) // Horizontal gradient
+    )
+
+
 }

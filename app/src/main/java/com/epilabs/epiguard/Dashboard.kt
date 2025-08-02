@@ -1,51 +1,92 @@
 package com.epilabs.epiguard
 
 import android.widget.Toast
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
+import androidx.compose.material3.Badge
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.epilabs.epiguard.database.DatabaseConnector
 import com.epilabs.epiguard.database.UserDAO
-import com.epilabs.epiguard.R
 import com.epilabs.epiguard.ui.AppColors
-import com.epilabs.epiguard.ui.AppTypes
-import com.epilabs.epiguard.ui.components.BottomNav
-import com.epilabs.epiguard.ui.components.Component1
-import com.epilabs.epiguard.ui.components.NavBar
-import com.epilabs.epiguard.ui.theme.AppShadows
+import com.epilabs.epiguard.ui.components.BottomMenuContent
+import com.epilabs.epiguard.ui.components.Feature
+import com.epilabs.epiguard.ui.theme.AquaBlue
+import com.epilabs.epiguard.ui.theme.Beige1
+import com.epilabs.epiguard.ui.theme.Beige2
+import com.epilabs.epiguard.ui.theme.Beige3
+import com.epilabs.epiguard.ui.theme.BlueViolet1
+import com.epilabs.epiguard.ui.theme.BlueViolet2
+import com.epilabs.epiguard.ui.theme.BlueViolet3
+import com.epilabs.epiguard.ui.theme.ButtonBlue
+import com.epilabs.epiguard.ui.theme.DarkerButtonBlue
+import com.epilabs.epiguard.ui.theme.DeepBlue
+import com.epilabs.epiguard.ui.theme.LightGreen1
+import com.epilabs.epiguard.ui.theme.LightGreen2
+import com.epilabs.epiguard.ui.theme.LightGreen3
+import com.epilabs.epiguard.ui.theme.OrangeYellow1
+import com.epilabs.epiguard.ui.theme.OrangeYellow2
+import com.epilabs.epiguard.ui.theme.OrangeYellow3
+import com.epilabs.epiguard.ui.theme.TextWhite
 
+
+@ExperimentalFoundationApi
 @Composable
-fun Dashboard(modifier: Modifier = Modifier, navController: NavController, userId: Int) {
+fun Dashboard(navController: NavController, userId: Int) {
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
     val firstName = remember { mutableStateOf<String?>(null) }
+    val scrollState = rememberScrollState()
 
     // Fetch firstName from database
     LaunchedEffect(userId) {
@@ -54,903 +95,544 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController, userI
             val db = dbConnector.readableDatabase
             firstName.value = UserDAO.getUserFirstName(db, userId)
             db.close()
+        } else {
+            Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+            navController.navigate("sign_in")
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .requiredHeight(height = 844.dp)
-            .background(color = AppColors.color_Gray_50)
-    ) {
+    Box(modifier = Modifier.background(AppColors.color_Gray_50).fillMaxSize()) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
             modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(x = 0.dp, y = 16.dp)
                 .fillMaxWidth()
                 .verticalScroll(scrollState)
-                .background(color = AppColors.color_Gray_50)
-                .padding(bottom = 80.dp)
+                .padding(bottom = 80.dp) // Space for BottomMenu
         ) {
-            Component1(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-            )
-            Column(
-                verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.Top),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-         
-                    Column(
-                        verticalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .height(40.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
-                            Text(
-                                text = "Hi ${firstName.value ?: "Guest \uD83D\uDC4B"}",
-                                color = Color.Black,
-                                fontSize = 16.sp,
-                                modifier = Modifier
-                                    .weight(1f)
-                            )
+            UserHeader()
+            GreetingText(firstName = firstName.value)
+            PercentageCircleRow()
+            //SearchBar()
+            ChipSection(chips = listOf("Add Device", "Seizure Detector", "Live Feed",))
+            CurrentMeditation()
+            FeatureSection(features = listOf(
+                Feature(
+                    title = "Seizure Detector",
+                    imageId = R.drawable.epiguard, // Replace with actual resource
+                    darkColor = BlueViolet1,
+                    mediumColor = BlueViolet2,
+                    lightColor = BlueViolet3,
+                    route = "model_classification/$userId"
+                ),
+                Feature(
+                    title = "Tracker and Analytics",
+                    imageId = R.drawable.analytics, // Replace with actual resource
+                    darkColor = LightGreen1,
+                    mediumColor = LightGreen2,
+                    lightColor = LightGreen3,
+                    route = "add_contact/$userId"
+                ),
+                Feature(
+                    title = "Test Lab",
+                    imageId = R.drawable.untitled_design, // Replace with actual resource
+                    darkColor = OrangeYellow1,
+                    mediumColor = OrangeYellow2,
+                    lightColor = OrangeYellow3,
+                    route = "view_contacts/$userId"
+                ),
+                Feature(
+                    title = "Contacts and Alerts",
+                    imageId = R.drawable.family, // Replace with actual resource
+                    darkColor = Beige1,
+                    mediumColor = Beige2,
+                    lightColor = Beige3,
+                    route = "upload_video/$userId"
+                )
+            ), navController = navController, userId = userId)
+        }
+        BottomMenu(items = listOf(
+            BottomMenuContent("Home", R.drawable.ic_home),
+            BottomMenuContent("Detector", R.drawable.ic_bubble),
+            BottomMenuContent("Ai Lab", R.drawable.ic_moon),
+            BottomMenuContent("Contacts", R.drawable.ic_music),
+            BottomMenuContent("Settings", R.drawable.ic_profile)
+        ), modifier = Modifier.align(Alignment.BottomCenter))
+    }
+}
 
-                        }
-                        Text(
-                            text = "Welcome back to your EpiGuard Dashboard!",
-                            color = Color.Black,
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        )
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .requiredHeight(height = 163.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .requiredHeight(height = 163.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.banner4),
-                            contentDescription = "Image",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(shape = RoundedCornerShape(12.dp))
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .align(alignment = Alignment.TopStart)
-                            .offset(x = (-40).dp, y = (-55).dp)
-                            .requiredSize(size = 154.dp)
-                            .clip(shape = CircleShape)
-                            .background(color = Color(0xffd9d9d9).copy(alpha = 0.2f))
-                    )
-                    Text(
-                        text = "Meet Sera \nyour AI assistant",
-                        color = AppColors.color_white,
-                        style = AppTypes.type_Body_Large_400,
-                        modifier = Modifier
-                            .align(alignment = Alignment.TopStart)
-                            .offset(x = 11.dp, y = 31.dp)
-                    )
-                    Text(
-                        text = "Ask me anything about EpiGuard.\nI’m here to help.",
-                        color = AppColors.color_white,
-                        lineHeight = 12.5.em,
-                        style = AppTypes.type_Body_Regular_400,
-                        modifier = Modifier
-                            .align(alignment = Alignment.TopStart)
-                            .offset(x = 11.dp, y = 93.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .align(alignment = Alignment.TopStart)
-                            .offset(x = 68.dp, y = 151.dp)
-                            .requiredSize(size = 83.dp)
-                            .clip(shape = CircleShape)
-                            .background(color = Color(0xffd9d9d9).copy(alpha = 0.2f))
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                        modifier = Modifier
-                            .align(alignment = Alignment.BottomStart)
-                            .offset(x = 141.dp, y = (-6).dp)
-                    ) {
-                        ActiveYes()
-                        Badge()
-                        Badge()
-                        Badge()
-                    }
-                }
+@Composable
+fun UserHeader(modifier: Modifier = Modifier, name: String = "Fulano") {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+            .requiredHeight(52.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xff8a19d6))
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.guy1),
+                    contentDescription = "User profile",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
-            Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.Top),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Categories",
-                        color = AppColors.color_violet,
-                        lineHeight = 9.38.em,
-                        style = AppTypes.type_Body_Regular_400
+            Column {
+                Text(
+                    text = name,
+                    color = Color(0xff2c2c2c),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
                     )
-                    Text(
-                        text = "See All",
-                        color = AppColors.color_Gray_600,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 10.71.em,
-                        style = AppTypes.type_Typography_Body_Small
-                    )
-                }
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(32.dp, Alignment.Start),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        // Box 1: btn1
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .requiredSize(size = 62.dp)
-                                    .clip(shape = RoundedCornerShape(8.dp))
-                                    .background(color = AppColors.color_white)
-                                    .clickable { navController.navigate("model_classification/$userId") }
-                            ) {
-                                Column(
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier
-                                        .requiredSize(size = 62.dp)
-                                        .padding(all = 10.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .requiredWidth(width = 35.dp)
-                                            .requiredHeight(height = 35.dp)
-                                            .align(Alignment.CenterHorizontally)
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.codesandbox),
-                                            contentDescription = "Classify",
-                                            modifier = Modifier
-                                                .requiredWidth(width = 35.dp)
-                                                .requiredHeight(height = 35.dp)
-                                                .align(Alignment.Center)
-                                        )
-                                    }
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .align(alignment = Alignment.TopStart)
-                                        .offset(x = (-34).dp, y = (-34).dp)
-                                        .requiredSize(size = 68.dp)
-                                        .clip(shape = CircleShape)
-                                        .background(color = Color.White.copy(alpha = 0.2f))
-                                )
-                            }
-                            Text(
-                                text = "btn1",
-                                color = AppColors.color_Gray_600,
-                                textAlign = TextAlign.Center,
-                                lineHeight = 12.5.em,
-                                style = AppTypes.type_Body_Regular_400
-                            )
-                        }
-                        // Box 2: btn2
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .requiredSize(size = 62.dp)
-                                    .clip(shape = RoundedCornerShape(8.dp))
-                                    .background(color = AppColors.color_white)
-                                    .clickable {
-                                        if (userId != -1) {
-                                            navController.navigate("add_contact/$userId")
-                                        } else {
-                                            Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
-                                            navController.navigate("sign_in")
-                                        }
-                                    }
-                            ) {
-                                Column(
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier
-                                        .requiredSize(size = 62.dp)
-                                        .padding(all = 10.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .requiredWidth(width = 35.dp)
-                                            .requiredHeight(height = 35.dp)
-                                            .align(Alignment.CenterHorizontally)
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.face_detection),
-                                            contentDescription = "Contact",
-                                            modifier = Modifier
-                                                .requiredWidth(width = 35.dp)
-                                                .requiredHeight(height = 35.dp)
-                                                .align(Alignment.Center)
-                                        )
-                                    }
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .align(alignment = Alignment.TopStart)
-                                        .offset(x = (-34).dp, y = (-34).dp)
-                                        .requiredSize(size = 68.dp)
-                                        .clip(shape = CircleShape)
-                                        .background(color = Color.White.copy(alpha = 0.2f))
-                                )
-                            }
-                            Text(
-                                text = "btn2",
-                                color = AppColors.color_Gray_600,
-                                textAlign = TextAlign.Center,
-                                lineHeight = 12.5.em,
-                                style = AppTypes.type_Body_small_400
-                            )
-                        }
-                        // Box 3: btn3
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .requiredSize(size = 62.dp)
-                                    .clip(shape = RoundedCornerShape(8.dp))
-                                    .background(color = AppColors.color_white)
-                                    .clickable {
-                                        if (userId != -1) {
-                                            navController.navigate("view_contacts/$userId")
-                                        } else {
-                                            Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
-                                            navController.navigate("sign_in")
-                                        }
-                                    }
-                            ) {
-                                Column(
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier
-                                        .requiredSize(size = 62.dp)
-                                        .padding(all = 10.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .requiredWidth(width = 35.dp)
-                                            .requiredHeight(height = 35.dp)
-                                            .align(Alignment.CenterHorizontally)
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.diary),
-                                            contentDescription = "Contacts",
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .align(Alignment.Center)
-                                        )
-                                    }
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .align(alignment = Alignment.TopStart)
-                                        .offset(x = (-34).dp, y = (-34).dp)
-                                        .requiredSize(size = 68.dp)
-                                        .clip(shape = CircleShape)
-                                        .background(color = Color.White.copy(alpha = 0.2f))
-                                )
-                            }
-                            Text(
-                                text = "btn3",
-                                color = AppColors.color_Gray_600,
-                                textAlign = TextAlign.Center,
-                                lineHeight = 12.5.em,
-                                style = AppTypes.type_Body_small_400
-                            )
-                        }
-
-                        // Box 4: btn4
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .requiredSize(size = 62.dp)
-                                    .clip(shape = RoundedCornerShape(8.dp))
-                                    .background(color = AppColors.color_white)
-                                    .clickable {
-                                        if (userId != -1) {
-                                            navController.navigate("upload_video/$userId")
-                                        } else {
-                                            Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
-                                            navController.navigate("sign_in")
-                                        }
-                                    }
-                            ) {
-                                Column(
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier
-                                        .requiredSize(size = 62.dp)
-                                        .padding(all = 10.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .requiredWidth(width = 35.dp)
-                                            .requiredHeight(height = 35.dp)
-                                            .align(Alignment.CenterHorizontally)
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.evaluation),
-                                            contentDescription = "Upload",
-                                            modifier = Modifier
-                                                .requiredWidth(width = 35.dp)
-                                                .requiredHeight(height = 35.dp)
-                                                .align(Alignment.Center)
-                                        )
-                                    }
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .align(alignment = Alignment.TopStart)
-                                        .offset(x = (-34).dp, y = (-34).dp)
-                                        .requiredSize(size = 68.dp)
-                                        .clip(shape = CircleShape)
-                                        .background(color = Color.White.copy(alpha = 0.2f))
-                                )
-                            }
-                            Text(
-                                text = "Upload Video",
-                                color = AppColors.color_Gray_600,
-                                textAlign = TextAlign.Center,
-                                lineHeight = 12.5.em,
-                                style = AppTypes.type_Body_small_400
-                            )
-                        }
-                    }
-
-                    // Component3 from Code 2
-                    Component3(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-                }
-            }
-            Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.Top),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Nearby Medical Centers",
-                        color = AppColors.color_violet,
-                        lineHeight = 9.38.em,
-                        style = AppTypes.type_Body_Regular_400
-                    )
-                    Text(
-                        text = "See All",
-                        color = AppColors.color_Gray_600,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 10.71.em,
-                        style = AppTypes.type_Body_Regular_400
-                    )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 16.dp, bottom = 16.dp)
-                ) {
-                    Card(
-                        colors = CardDefaults.elevatedCardColors(
-                            containerColor = Color.White,
-                            contentColor = AppColors.color_Gray_600
-                        ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .requiredHeight(height = 252.dp)
-                            .clip(shape = RoundedCornerShape(8.dp))
-                            .background(color = Color.White)
-                            .border(1.dp, AppColors.color_Gray_50, RoundedCornerShape(8.dp))
-                            .shadow(elevation = 1.dp, shape = RoundedCornerShape(8.dp))
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .requiredHeight(height = 252.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.mayo),
-                                contentDescription = "Image",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .requiredHeight(height = 121.dp)
-                                    .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)),
-                                contentScale = ContentScale.Crop
-                            )
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Top),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 12.dp)
-                            ) {
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(
-                                            text = "Sunrise Health Clinic",
-                                            color = AppColors.color_Gray_600,
-                                            lineHeight = 10.71.em,
-                                            style = AppTypes.type_Body_small_400,
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Image(
-                                                painter = painterResource(id = R.drawable.sms),
-                                                contentDescription = "vuesax/linear/location",
-                                                modifier = Modifier.requiredSize(size = 14.dp)
-                                            )
-                                            Text(
-                                                text = "123 Oak Street, CA 98765",
-                                                color = AppColors.color_Gray_600,
-                                                lineHeight = 12.5.em,
-                                                style = AppTypes.type_Body_Regular_400
-                                            )
-                                        }
-                                    }
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = "5.0",
-                                                color = AppColors.color_Gray_600,
-                                                lineHeight = 12.5.em,
-                                                style = AppTypes.type_Body_small_400
-                                            )
-                                            Image(
-                                                imageVector = Icons.Default.Star,
-                                                contentDescription = "Frame 1000000929"
-                                            )
-                                        }
-                                        Text(
-                                            text = "(58 Reviews)",
-                                            color = AppColors.color_Gray_600,
-                                            lineHeight = 12.5.em,
-                                            style = AppTypes.type_Body_small_400
-                                        )
-                                    }
-                                }
-                                HorizontalDivider(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = AppColors.color_Gray_600
-                                )
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(36.dp, Alignment.Start),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.camera),
-                                            contentDescription = "vuesax/bold/routing",
-                                            modifier = Modifier.requiredSize(size = 16.dp)
-                                        )
-                                        Text(
-                                            text = "2.5 km/40min",
-                                            color = AppColors.color_Gray_600,
-                                            lineHeight = 12.5.em,
-                                            style = AppTypes.type_Body_small_400
-                                        )
-                                    }
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.mail),
-                                            contentDescription = "vuesax/bold/hospital",
-                                            modifier = Modifier.requiredSize(size = 16.dp)
-                                        )
-                                        Text(
-                                            text = "Hospital",
-                                            color = AppColors.color_Gray_600,
-                                            lineHeight = 12.5.em,
-                                            style = AppTypes.type_Body_small_400
-                                        )
-                                    }
-                                }
-                            }
-                            Image(
-                                painter = painterResource(id = R.drawable.sms),
-                                contentDescription = "Frame 1000001036",
-                                modifier = Modifier
-                                    .align(Alignment.End)
-                                    .offset(x = (-8).dp, y = (-8).dp)
-                                    .clip(shape = RoundedCornerShape(52.dp))
-                                    .padding(all = 6.dp)
-                                    .background(color = Color.White)
-                            )
-                        }
-                    }
-                    Card(
-                        colors = CardDefaults.elevatedCardColors(
-                            containerColor = Color.White,
-                            contentColor = AppColors.color_Gray_600
-                        ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .requiredHeight(height = 252.dp)
-                            .clip(shape = RoundedCornerShape(8.dp))
-                            .background(color = Color.White)
-                            .border(1.dp, AppColors.color_Gray_50, RoundedCornerShape(8.dp))
-                            .shadow(elevation = 1.dp, shape = RoundedCornerShape(8.dp))
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .requiredHeight(height = 252.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.og),
-                                contentDescription = "Image",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .requiredHeight(height = 121.dp)
-                                    .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)),
-                                contentScale = ContentScale.Crop
-                            )
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Top),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 12.dp)
-                            ) {
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(
-                                            text = "Sunrise Health Clinic",
-                                            color = AppColors.color_Gray_600,
-                                            lineHeight = 10.71.em,
-                                            style = AppTypes.type_Body_small_400,
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Image(
-                                                painter = painterResource(id = R.drawable.sms),
-                                                contentDescription = "vuesax/linear/location",
-                                                modifier = Modifier.requiredSize(size = 14.dp)
-                                            )
-                                            Text(
-                                                text = "123 Oak Street, CA 98765",
-                                                color = AppColors.color_Gray_600,
-                                                lineHeight = 12.5.em,
-                                                style = AppTypes.type_Body_Regular_400
-                                            )
-                                        }
-                                    }
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = "5.0",
-                                                color = AppColors.color_Gray_600,
-                                                lineHeight = 12.5.em,
-                                                style = AppTypes.type_Body_small_400
-                                            )
-                                            Image(
-                                                painter = painterResource(id = R.drawable.users),
-                                                contentDescription = "Frame 1000000929"
-                                            )
-                                        }
-                                        Text(
-                                            text = "(58 Reviews)",
-                                            color = AppColors.color_Gray_600,
-                                            lineHeight = 12.5.em,
-                                            style = AppTypes.type_Body_small_400
-                                        )
-                                    }
-                                }
-                                HorizontalDivider(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = AppColors.color_Gray_600
-                                )
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(36.dp, Alignment.Start),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.camera),
-                                            contentDescription = "vuesax/bold/routing",
-                                            modifier = Modifier.requiredSize(size = 16.dp)
-                                        )
-                                        Text(
-                                            text = "2.5 km/40min",
-                                            color = AppColors.color_Gray_600,
-                                            lineHeight = 12.5.em,
-                                            style = AppTypes.type_Body_small_400
-                                        )
-                                    }
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.mail),
-                                            contentDescription = "vuesax/bold/hospital",
-                                            modifier = Modifier.requiredSize(size = 16.dp)
-                                        )
-                                        Text(
-                                            text = "Hospital",
-                                            color = AppColors.color_Gray_600,
-                                            lineHeight = 12.5.em,
-                                            style = AppTypes.type_Body_small_400
-                                        )
-                                    }
-                                }
-                            }
-                            Image(
-                                painter = painterResource(id = R.drawable.sms),
-                                contentDescription = "Frame 1000001036",
-                                modifier = Modifier
-                                    .align(Alignment.End)
-                                    .offset(x = (-8).dp, y = (-8).dp)
-                                    .clip(shape = RoundedCornerShape(52.dp))
-                                    .padding(all = 6.dp)
-                                    .background(color = Color.White)
-                            )
-                        }
-                    }
-                }
+                )
+                Text(
+                    text = "Administrador",
+                    color = Color(0xff8c8c8c),
+                    style = TextStyle(fontSize = 12.sp)
+                )
             }
         }
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            /* Your main screen content here */
-            BottomNav(modifier = Modifier.align(Alignment.BottomCenter))
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White)
+                .shadow(elevation = 1.dp, shape = RoundedCornerShape(10.dp))
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable._d_notification_bell_icon_illustration_png),
+                contentDescription = "Notifications",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(24.dp)
+            )
+            Badge(
+                containerColor = Color(0xffff4d4d),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 4.dp, y = (-4).dp)
+            )
         }
     }
 }
 
 @Composable
-fun ActiveYes(modifier: Modifier = Modifier) {
-    Box(
+fun GreetingText(modifier: Modifier = Modifier, firstName: String? = null) {
+    Column(
         modifier = modifier
-            .requiredWidth(width = 30.dp)
-            .requiredHeight(height = 6.dp)
+            .fillMaxWidth()
+            .padding(15.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(shape = RoundedCornerShape(40.dp))
-                .background(color = AppColors.color_white)
+        Text(
+            text = "Hi ${firstName ?: "Guest 👋"}",
+            color = Color.Black,
+            fontSize = 20.sp
+        )
+        Text(
+            text = "Welcome back to your EpiGuard Dashboard!",
+            color = Color.Black,
+            fontSize = 16.sp
         )
     }
 }
 
 @Composable
-fun Component3(modifier: Modifier = Modifier) {
+fun SearchBar(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(230.dp)
-            .clip(RoundedCornerShape(10.dp))
+            .padding(15.dp)
+            .requiredHeight(height = 47.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White)
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(0.dp, Alignment.Top),
-            modifier = Modifier.fillMaxSize()
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Image section (~80% height)
+            Icon(
+                painter = painterResource(id = R.drawable.search),
+                contentDescription = "Search",
+                tint = Color(0xffaeaeae),
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = "Buscar...",
+                color = Color(0xffaeaeae),
+                style = TextStyle(fontSize = 16.sp)
+            )
+        }
+    }
+}
+
+@Composable
+fun BottomMenu(
+    items: List<BottomMenuContent>,
+    modifier: Modifier = Modifier,
+    activeHighlightColor: Color = ButtonBlue,
+    activeTextColor: Color = Color.White,
+    inactiveTextColor: Color = AquaBlue,
+    initialSelectedItemIndex: Int = 0
+) {
+    var selectedItemIndex by remember { mutableIntStateOf(initialSelectedItemIndex) }
+    Row(
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxWidth().background(DeepBlue).padding(15.dp)
+    ) {
+        items.forEachIndexed { index, item ->
+            BottomMenuItem(
+                item = item,
+                isSelected = index == selectedItemIndex,
+                activeHighlightColor = activeHighlightColor,
+                activeTextColor = activeTextColor,
+                inactiveTextColor = inactiveTextColor
+            ) { selectedItemIndex = index }
+        }
+    }
+}
+
+@Composable
+fun BottomMenuItem(
+    item: BottomMenuContent,
+    isSelected: Boolean = false,
+    activeHighlightColor: Color = ButtonBlue,
+    activeTextColor: Color = Color.White,
+    inactiveTextColor: Color = AquaBlue,
+    onItemClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.clickable { onItemClick() }
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(if (isSelected) activeHighlightColor else Color.Transparent).padding(10.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = item.iconId),
+                contentDescription = item.title,
+                tint = if (isSelected) activeTextColor else inactiveTextColor,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Text(text = item.title, color = if (isSelected) activeTextColor else inactiveTextColor)
+    }
+}
+
+@Composable
+fun ChipSection(chips: List<String>) {
+    var selectedChipIndex by remember { mutableIntStateOf(0) }
+    LazyRow {
+        items(chips.size) {
             Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp) // ~80% of 230.dp
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.room),
-                    contentDescription = "Profile Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(190.dp)
-                        .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
-                )
-
-
-                Text(
-                    text = "Living room",
-                    color = AppColors.color_Gray_700,
-                    lineHeight = 1.71.em,
-                    style = AppTypes.type_Body_small_400,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 16.dp, y = 198.dp)
-                )
-            }
-
-            // White strip at the bottom (~20% height)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(AppColors.color_white)
+                    .padding(start = 15.dp, top = 15.dp, bottom = 15.dp)
+                    .clickable { selectedChipIndex = it }
                     .clip(RoundedCornerShape(10.dp))
-
+                    .background(if (selectedChipIndex == it) ButtonBlue else DarkerButtonBlue)
+                    .padding(15.dp)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .clip(RoundedCornerShape(10.dp))
-
-                ) {
-                    // Left side: Two rows of text
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top)
-                    ) {
-                        Text(
-                            text = "Bedroom",
-                            color = AppColors.color_Gray_700,
-                            lineHeight = 1.71.em,
-                            style = AppTypes.type_Body_small_400, // Bolder style
-                            modifier = Modifier // Smaller, non-bold text
-                                .weight(2f)
-                        )
-                        Text(
-                            text = "Camera Feed Active",
-                            color = AppColors.color_Gray_700,
-                            lineHeight = 1.43.em,
-                            style = AppTypes.type_Body_small_400,
-                            modifier = Modifier // Smaller, non-bold text
-
-                        )
-                    }
-                    // Right side: Three circular icons
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .clip(CircleShape)
-                                .background(AppColors.color_Gray_700)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.skip_backward),
-                                contentDescription = "Icon 1",
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.Center),
-
-                                contentScale = ContentScale.Fit,
-
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .clip(CircleShape)
-                                .background(AppColors.color_Gray_700)
-
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.play),
-                                contentDescription = "Icon 2",
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .align(Alignment.Center),
-                                contentScale = ContentScale.Fit,
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .clip(CircleShape)
-                                .background(AppColors.color_Gray_700)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.full_screen),
-                                contentDescription = "Icon 3",
-                                modifier = Modifier
-                                    .size(25.dp)
-                                    .align(Alignment.Center),
-                                contentScale = ContentScale.Fit,
-                            )
-                        }
-                    }
-                }
+                Text(text = chips[it], color = TextWhite)
             }
         }
     }
 }
 
-
-@Preview(widthDp = 390, heightDp = 844)
 @Composable
-private fun DashboardPreview() {
-    Dashboard(Modifier, navController = NavController(LocalContext.current), userId = 1)
+fun PercentageCircleRow() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        PercentageCircle(percentage = 100, label = "Seizures Detected")
+        PercentageCircle(percentage = 100, label = "Seizure Free")
+        PercentageCircle(percentage = 100, label = "Text 3")
+    }
+}
+
+@Composable
+fun PercentageCircle(percentage: Int, label: String) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(90.dp) // consistent size
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawArc(
+                color = Color.LightGray,
+                startAngle = -90f,
+                sweepAngle = 360f,
+                useCenter = false,
+                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 10.dp.toPx())
+            )
+            drawArc(
+                color = ButtonBlue, // Or any app color
+                startAngle = -90f,
+                sweepAngle = (percentage / 100f) * 360f,
+                useCenter = false,
+                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 10.dp.toPx())
+            )
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "$percentage%",
+                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            )
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+        }
+    }
+}
+
+
+@Composable
+fun CurrentMeditation() {
+    Box(
+        modifier = Modifier
+            .padding(15.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(AppColors.blue_violet_gradient)
+            .fillMaxWidth()
+            .requiredHeight(120.dp) // Total height including padding
+            .clipToBounds() // Allow image overflow
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.heroimage), // Your AI bot drawable
+            contentDescription = "AI Assistant",
+            contentScale = ContentScale.Fit, // Preserve aspect ratio
+            modifier = Modifier
+                .align(Alignment.TopEnd) // Align top-right
+                .size(width = 190.dp, height = 190.dp) // Match/exceed visible height
+                .padding(end = 5.dp) // Match horizontal padding
+                .zIndex(1f)
+                .clipToBounds() // Allow top overflow
+        )
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .width(IntrinsicSize.Max)
+                .padding(start = 15.dp, end = 8.dp, top = 20.dp, bottom = 20.dp) ,// Match inner padding
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = "New AI Test Lab!",
+                style = TextStyle(
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 16.sp
+                ),
+                color = TextWhite,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = "Upload seizure videos & \ntest AI models for epilepsy care.",
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 20.sp
+                ),
+                color = TextWhite.copy(alpha = 0.8f),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(12.dp)) // Space between text and button
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .width(120.dp) // fixed width to help center the content
+                    .height(36.dp) // increase height slightly for better tap area
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(AppColors.color_Gray_White)
+                    .padding(horizontal = 8.dp) // internal padding to center nicely
+                    .zIndex(1f)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_play),
+                    contentDescription = "Try Now",
+                    tint = AppColors.color_violet,
+                    modifier = Modifier
+                        .size(11.dp) // icon size matches text height roughly
+                )
+                Spacer(modifier = Modifier.width(6.dp)) // spacing between icon and text
+                Text(
+                    text = "Try Now",
+                    color = AppColors.color_violet,
+                    fontSize = 14.sp // ensure it's balanced with icon
+                )
+            }
+
+
+        }
+    }
+}
+
+
+@Composable
+fun FeatureSection(features: List<Feature>, navController: NavController, userId: Int) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp),
+        verticalArrangement = Arrangement.spacedBy(7.5.dp)
+    ) {
+        Text(
+            text = "Features",
+            style = MaterialTheme.typography.labelMedium
+        )
+        // First row: Seizure Detector, Tracker and Analytics
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(7.5.dp)
+        ) {
+            FeatureItem(
+                feature = features[0],
+                navController = navController,
+                userId = userId,
+                modifier = Modifier.weight(1f)
+            )
+            FeatureItem(
+                feature = features[1],
+                navController = navController,
+                userId = userId,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        // Second row: Test Lab, Contacts and Alerts
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(7.5.dp)
+        ) {
+            FeatureItem(
+                feature = features[2],
+                navController = navController,
+                userId = userId,
+                modifier = Modifier.weight(1f)
+            )
+            FeatureItem(
+                feature = features[3],
+                navController = navController,
+                userId = userId,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+fun FeatureItem(
+    feature: Feature,
+    navController: NavController,
+    userId: Int,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    BoxWithConstraints(
+        modifier = modifier
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(10.dp))
+            .background(feature.darkColor)
+            .clickable {
+                if (userId != -1 || feature.route == "model_classification/$userId") {
+                    navController.navigate(feature.route)
+                } else {
+                    Toast.makeText(context, "Invalid user ID. Please sign in again.", Toast.LENGTH_SHORT).show()
+                    navController.navigate("sign_in")
+                }
+            }
+    ) {
+        val width = constraints.maxWidth
+        val height = constraints.maxHeight
+        val mediumColoredPoint1 = Offset(0f, height * 0.3f)
+        val mediumColoredPoint2 = Offset(width * 0.1f, height * 0.35f)
+        val mediumColoredPoint3 = Offset(width * 0.4f, height * 0.05f)
+        val mediumColoredPoint4 = Offset(width * 0.75f, height * 0.7f)
+        val mediumColoredPoint5 = Offset(width * 1.4f, -height.toFloat())
+        val mediumColoredPath = Path().apply {
+            moveTo(mediumColoredPoint1.x, mediumColoredPoint1.y)
+            standardQuadFromTo(mediumColoredPoint1, mediumColoredPoint2)
+            standardQuadFromTo(mediumColoredPoint2, mediumColoredPoint3)
+            standardQuadFromTo(mediumColoredPoint3, mediumColoredPoint4)
+            standardQuadFromTo(mediumColoredPoint4, mediumColoredPoint5)
+            lineTo(width.toFloat() + 100f, height.toFloat() + 100f)
+            lineTo(-100f, height.toFloat() + 100f)
+            close()
+        }
+        val lightPoint1 = Offset(0f, height * 0.35f)
+        val lightPoint2 = Offset(width * 0.1f, height * 0.4f)
+        val lightPoint3 = Offset(width * 0.3f, height * 0.35f)
+        val lightPoint4 = Offset(width * 0.65f, height.toFloat())
+        val lightPoint5 = Offset(width * 1.4f, -height.toFloat() / 3f)
+        val lightColoredPath = Path().apply {
+            moveTo(lightPoint1.x, lightPoint1.y)
+            standardQuadFromTo(lightPoint1, lightPoint2)
+            standardQuadFromTo(lightPoint2, lightPoint3)
+            standardQuadFromTo(lightPoint3, lightPoint4)
+            standardQuadFromTo(lightPoint4, lightPoint5)
+            lineTo(width.toFloat() + 100f, height.toFloat() + 100f)
+            lineTo(-100f, height.toFloat() + 100f)
+            close()
+        }
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawPath(path = mediumColoredPath, color = feature.mediumColor)
+            drawPath(path = lightColoredPath, color = feature.lightColor)
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(5.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Image(
+                    painter = painterResource(id = feature.imageId),
+                    contentDescription = "${feature.title} image",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(110.dp)
+                )
+                Text(
+                    text = feature.title,
+                    style = MaterialTheme.typography.labelMedium,
+                    lineHeight = 26.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth(Alignment.CenterHorizontally)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Preview(widthDp = 390, heightDp = 920)
+@Composable
+private fun DashboardScreenPreview() {
+    Dashboard(navController = NavController(LocalContext.current), userId = 1)
 }

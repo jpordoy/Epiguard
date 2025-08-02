@@ -1,649 +1,500 @@
 package com.epilabs.epiguard
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.epilabs.epiguard.ui.AppColors
-import com.epilabs.epiguard.ui.AppTypes
+
+// Data class for bar chart data
+data class BarData(
+    val day: String,
+    val seizureHeight: Float, // Height for Seizure bar (0 to 1, scaled to max height)
+    val notSeizureHeight: Float // Height for Not Seizure bar (0 to 1, scaled to max height)
+)
 
 @Composable
-fun Home(modifier: Modifier = Modifier) {
+fun Component13(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .requiredHeight(height = 812.dp)
-            .background(color = AppColors.color_Gray_100) // Replaced Color(0xfff8faff)
+            .requiredWidth(width = 375.dp)
+            .requiredHeight(height = 906.dp)
+            .background(AppColors.color_Gray_50)
     ) {
-        // Status Bar (Top)
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .requiredHeight(height = 44.dp)
-        ) {
-            Text(
-                text = "9:41",
-                color = AppColors.color_black,
-                textAlign = TextAlign.Center,
-                style = AppTypes.type_Typography_Body_Small, // Closest to 15sp
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = 21.dp, y = 2.5.dp)
-                    .requiredWidth(width = 54.dp)
-            )
-            Image(
-                painter = painterResource(id = R.drawable.phone),
-                contentDescription = "Cellular Connection",
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 294.dp, y = 17.67.dp)
-                    .requiredWidth(width = 17.dp)
-                    .requiredHeight(height = 11.dp)
-            )
-            Image(
-                painter = painterResource(id = R.drawable.fast_rewind),
-                contentDescription = "Wifi",
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 316.dp, y = 17.33.dp)
-                    .requiredWidth(width = 15.dp)
-                    .requiredHeight(height = 11.dp)
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 336.33.dp, y = 17.33.dp)
-                    .requiredWidth(width = 24.dp)
-                    .requiredHeight(height = 11.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .offset(x = (-2.33).dp, y = 0.dp)
-                        .requiredWidth(width = 22.dp)
-                        .requiredHeight(height = 11.dp)
-                        .clip(shape = RoundedCornerShape(2.67.dp))
-                        .border(
-                            border = BorderStroke(1.dp, AppColors.color_black),
-                            shape = RoundedCornerShape(2.67.dp)
-                        )
-                )
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .offset(x = (-4.33).dp, y = 0.dp)
-                        .requiredWidth(width = 18.dp)
-                        .requiredHeight(height = 7.dp)
-                        .clip(shape = RoundedCornerShape(1.33.dp))
-                        .background(color = AppColors.color_black)
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.user),
-                    contentDescription = "Cap",
-                    alpha = 0.4f,
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .offset(x = 0.dp, y = 0.dp)
-                        .requiredWidth(width = 1.dp)
-                        .requiredHeight(height = 4.dp)
-                )
-            }
-        }
-
-        // Greeting Section
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .offset(x = 30.dp, y = 51.dp)
-                .requiredWidth(width = 135.dp)
-                .requiredHeight(height = 55.dp)
-        ) {
-            Text(
-                text = "👋  Good Morning!",
-                color = AppColors.color_Gray_700, // Replaced Color(0xff001133).copy(alpha = 0.6f)
-                style = AppTypes.type_Typography_Body_Small, // Closest to 12.84sp, Medium
-                modifier = Modifier
-            )
-            Text(
-                text = "Alexandar",
-                color = AppColors.color_black, // Replaced Color(0xff001133)
-                style = AppTypes.type_Header_Header_2, // Closest to 28.84sp, Medium
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 0.dp, y = 19.dp)
-            )
-        }
-
-        // Profile Image Section
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .offset(x = 296.dp, y = 53.dp)
-                .requiredWidth(width = 50.dp)
-                .requiredHeight(height = 54.dp)
+                .requiredWidth(width = 375.dp)
+                .requiredHeight(height = 140.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .requiredWidth(width = 50.dp)
-                    .requiredHeight(height = 54.dp)
+                    .fillMaxSize()
+                    .background(color = Color.White)
+            )
+            Box(
+                modifier = Modifier
+                    .align(alignment = Alignment.TopStart)
+                    .offset(x = 25.dp, y = 25.dp)
+                    .requiredWidth(width = 324.dp)
+                    .requiredHeight(height = 35.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .requiredSize(size = 50.dp)
-                        .clip(shape = RoundedCornerShape(11.dp))
-                        .background(color = AppColors.color_Gray_50.copy(alpha = 0.1f)) // Replaced Color(0xffac886f).copy(alpha = 0.1f)
-                )
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 1.dp, y = 9.dp)
-                        .requiredSize(size = 40.dp)
-                        .background(Color(0xff00a911))
-
+                        .align(alignment = Alignment.TopStart)
+                        .offset(x = 289.dp, y = 0.dp)
+                        .requiredSize(size = 35.dp)
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable._1),
-                        contentDescription = "21",
-                        modifier = Modifier.fillMaxSize()
+                        painter = painterResource(id = R.drawable.mask_group),
+                        contentDescription = "pexels-christina-morillo-1181690 1",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(shape = CircleShape)
                     )
-
                 }
+                Text(
+                    text = "Accounts",
+                    color = Color(0xff343c6a),
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(fontSize = 20.sp),
+                    modifier = Modifier.fillMaxSize()
+                )
+                Image(
+                    painter = painterResource(id = R.drawable.menu1),
+                    contentDescription = "Group 692",
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(x = 0.dp, y = 10.dp)
+                        .requiredWidth(width = 14.dp)
+                        .requiredHeight(height = 18.dp)
+                )
             }
-        }
-
-        // Specialist Finder Section
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .offset(x = 40.dp, y = 72.dp)
-                .requiredWidth(width = 346.dp)
-                .requiredHeight(height = 237.dp)
-        ) {
-            // Background with shadow
             Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 0.dp, y = 64.dp)
-                    .requiredWidth(width = 315.dp)
-                    .requiredHeight(height = 173.dp)
-                    .clip(shape = RoundedCornerShape(24.dp))
-                    .background(color = AppColors.color_Gray_50) // Replaced Color.White
-            )
-            // Main Image
-            Image(
-                painter = painterResource(id = R.drawable.image_46),
-                contentDescription = "image 46",
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 130.dp, y = 0.dp)
-                    .requiredSize(size = 216.dp)
-            )
-            // Title Text
-            Text(
-                text = "Lets Find your\nSpecialist",
-                color = AppColors.color_black, // Replaced Color(0xff001133)
-                style = AppTypes.type_Header_Header_2, // Closest to 20.84sp, Medium
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 20.dp, y = 89.dp)
-                    .requiredWidth(width = 225.dp)
-            )
-            Box(
-                modifier = Modifier
-                    .requiredWidth(width = 275.dp)
-                    .requiredHeight(height = 46.dp)
-                    .clip(shape = RoundedCornerShape(15.dp))
-                    .background(color = AppColors.color_black)
-                    .offset(x = 40.dp, y = 72.dp)
-                    .border(
-                        border = BorderStroke(2.dp, Color.White),
-                        shape = RoundedCornerShape(15.dp)
-                    )
-            )
-            Text(
-                text = "Search",
-                color = Color(0xff001133).copy(alpha = 0.4f),
-                style = TextStyle(
-                    fontSize = 12.sp
-                ),
                 modifier = Modifier
                     .align(alignment = Alignment.TopStart)
-                    .offset(
-                        x = 45.dp,
-                        y = 15.dp
-                    )
-            )
-            Image(
-                painter = painterResource(id = R.drawable.search_normal),
-                contentDescription = "Group 6",
-                alpha = 0.5f,
-                modifier = Modifier
-                    .align(alignment = Alignment.TopStart)
-                    .offset(
-                        x = 20.dp,
-                        y = 18.dp
-                    )
-                    .requiredSize(size = 11.dp)
-            )
-        }
-
-
-
-
-
-        // Quick Help Section
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .offset(x = 30.dp, y = 339.dp)
-                .requiredWidth(width = 375.dp)
-                .requiredHeight(height = 99.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .requiredSize(size = 99.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .requiredSize(size = 99.dp)
-                        .clip(shape = RoundedCornerShape(24.dp))
-                        .background(color = AppColors.color_Primary_500) // Replaced Color(0xff54c1fb)
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.image_47),
-                    contentDescription = "image 47",
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 17.dp, y = 14.dp)
-                        .requiredWidth(width = 65.dp)
-                        .requiredHeight(height = 48.dp)
-                        .clip(shape = RoundedCornerShape(31.dp))
-                        .border(border = BorderStroke(1.dp, AppColors.color_Gray_50), shape = RoundedCornerShape(31.dp)) // Replaced Color(0xffc8eafd)
-                )
-                Text(
-                    text = "Quick Help",
-                    color = AppColors.color_Gray_50, // Replaced Color.White
-                    style = AppTypes.type_Typography_Body_Small, // Closest to 12sp
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 18.dp, y = 69.dp)
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 114.dp, y = 0.dp)
-                    .requiredWidth(width = 77.dp)
-                    .requiredHeight(height = 99.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .requiredSize(size = 77.dp)
-                        .clip(shape = RoundedCornerShape(24.dp))
-                        .background(color = AppColors.color_Gray_50) // Replaced Color.White
-                )
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x =  10.dp, y = 19.dp)
-                        .requiredSize(size = 40.dp)
-                        .clip(shape = CircleShape)
-                        .background(color = AppColors.color_Primary_500.copy(alpha = 0.1f)) // Replaced Color(0xff518cff).copy(alpha = 0.1f)
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.user45),
-                    contentDescription = "Vector",
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 21.dp, y = 30.dp)
-                        .requiredWidth(width = 17.dp)
-                        .requiredHeight(height = 17.dp)                )
-                Text(
-                    text = "Hospital",
-                    color = AppColors.color_black,
-                    style = AppTypes.type_Typography_Body_Small, // Closest to 10sp
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 20.dp, y = 86.dp)
-
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 206.dp, y = 0.dp)
-                    .requiredWidth(width = 77.dp)
-                    .requiredHeight(height = 99.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .requiredSize(size = 77.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .requiredSize(size = 77.dp)
-                            .clip(shape = RoundedCornerShape(24.dp))
-                            .background(color = AppColors.color_Gray_50) // Replaced Color.White
-                    )
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .offset(x = 18.dp, y = 19.dp)
-                            .requiredSize(size = 40.dp)
-                            .clip(shape = CircleShape)
-                            .background(color = AppColors.color_Primary_500.copy(alpha = 0.1f)) // Replaced Color(0xff00a911).copy(alpha = 0.1f)
-                    )
-                }
-                Image(
-                    painter = painterResource(id = R.drawable.user45),
-                    contentDescription = "Group 774",
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 30.dp, y = 33.dp)
-                        .requiredWidth(width = 17.dp)
-                        .requiredHeight(height = 13.dp)
-                )
-                Text(
-                    text = "Ambulance",
-                    color = AppColors.color_black,
-                    style = AppTypes.type_Typography_Body_Small, // Closest to 10sp
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 14.dp, y = 86.dp)
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 298.dp, y = 0.dp)
-                    .requiredWidth(width = 77.dp)
-                    .requiredHeight(height = 99.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .requiredSize(size = 77.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .requiredSize(size = 77.dp)
-                            .clip(shape = RoundedCornerShape(24.dp))
-                            .background(color = AppColors.color_Gray_50) // Replaced Color.White
-                    )
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .offset(x = 18.dp, y = 19.dp)
-                            .requiredSize(size = 40.dp)
-                            .clip(shape = CircleShape)
-                            .background(color = AppColors.color_Primary_500.copy(alpha = 0.1f)) // Replaced Color(0xff518cff).copy(alpha = 0.1f)
-                    )
-                }
-                Image(
-                    painter = painterResource(id = R.drawable.user45),
-                    contentDescription = "Group",
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 30.dp, y = 30.dp)
-                        .requiredWidth(width = 16.dp)
-                        .requiredHeight(height = 17.dp)
-                )
-                Text(
-                    text = "Doctors",
-                    color = AppColors.color_black,
-                    style = AppTypes.type_Typography_Body_Small, // Closest to 10sp
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 21.dp, y = 86.dp)
-                )
-            }
-        }
-
-        // Top Doctors Section
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .offset(x = 30.dp, y = 468.dp)
-                .requiredWidth(width = 325.dp) // Adjusted to fit within 375dp
-                .requiredHeight(height = 224.dp)
-        ) {
-            Text(
-                text = "Top Doctors",
-                color = AppColors.color_black, // Replaced Color(0xff001133)
-                lineHeight = 7.43.em,
-                style = AppTypes.type_Header_Header_2, // Closest to 18.84sp, Medium
-                modifier = Modifier
-            )
-            Text(
-                text = "See All",
-                color = AppColors.color_Primary_500, // Replaced Color(0xff54c1fb)
-                textAlign = TextAlign.End,
-                lineHeight = 10.9.em,
-                style = AppTypes.type_Typography_Body_Small, // Closest to 12.84sp
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 274.dp, y = 6.dp)
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 0.dp, y = 51.dp)
+                    .offset(x = 25.dp, y = 80.dp)
                     .requiredWidth(width = 325.dp)
-                    .requiredHeight(height = 173.dp)
+                    .requiredHeight(height = 40.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .requiredWidth(width = 325.dp)
-                        .requiredHeight(height = 173.dp)
-                        .clip(shape = RoundedCornerShape(24.dp))
-                        .background(color = AppColors.color_Gray_50) // Replaced Color.White
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.ttzbqv0gpo_removebg_preview_1),
-                    contentDescription = "TtzbQv0GpO-removebg-preview 1",
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = (-49).dp, y = 6.dp)
-                        .requiredWidth(width = 326.dp)
-                        .requiredHeight(height = 217.dp)
-                        .clip(shape = RoundedCornerShape(24.dp))
-                )
-                Text(
-                    text = "CARDIOLOGIST",
-                    color = AppColors.color_Primary_500, // Replaced Color(0xfffb9a54)
-                    lineHeight = 14.em,
-                    style = AppTypes.type_Typography_Body_Small, // Closest to 10sp, Medium
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 130.dp, y = 25.dp)
-                        .requiredWidth(width = 74.dp)
-                        .requiredHeight(height = 14.dp)
-                )
-                Text(
-                    text = "Dr. Maria Watson",
-                    color = AppColors.color_black, // Replaced Color(0xff001133)
-                    lineHeight = 8.31.em,
-                    style = AppTypes.type_Body_Large_400, // Closest to 16.84sp, Medium
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 130.dp, y = 47.dp)
-                )
-                Text(
-                    text = "10.00 AM - 12.00 PM",
-                    color = AppColors.color_Gray_700, // Replaced Color(0xff001133).copy(alpha = 0.5f)
-                    lineHeight = 10.9.em,
-                    style = AppTypes.type_Typography_Body_Small, // Closest to 12.84sp
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 130.dp, y = 73.dp)
+                        .fillMaxSize()
+                        .clip(shape = RoundedCornerShape(40.dp))
+                        .background(color = Color(0xfff5f7fa))
                 )
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 169.dp, y = 114.dp)
-                        .requiredWidth(width = 136.dp)
-                        .requiredHeight(height = 39.dp)
+                        .align(alignment = Alignment.TopStart)
+                        .offset(x = 19.dp, y = 12.dp)
+                        .requiredWidth(width = 158.dp)
+                        .requiredHeight(height = 16.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .requiredWidth(width = 136.dp)
-                            .requiredHeight(height = 39.dp)
-                            .clip(shape = RoundedCornerShape(10.dp))
-                            .background(color = AppColors.color_Primary_500) // Replaced Color(0xff518cff)
+                    Image(
+                        painter = painterResource(id = R.drawable.search_normal),
+                        contentDescription = "magnifying-glass 1",
+                        colorFilter = ColorFilter.tint(Color(0xff718ebf))
                     )
                     Text(
-                        text = "Get Appointment",
-                        color = AppColors.color_black, // Replaced Color.White
-                        lineHeight = 12.92.em,
-                        style = AppTypes.type_Typography_Body_Small, // Closest to 10.84sp, Medium
+                        text = "Search for something",
+                        color = Color(0xff8ba3cb),
+                        style = TextStyle(fontSize = 13.sp),
                         modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .offset(x = 24.dp, y = 12.dp)
-                    )
-                }
-            }
-            // Second Doctor Card (adjusted to fit within 325dp)
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 0.dp, y = 51.dp)
-                    .requiredWidth(width = 325.dp)
-                    .requiredHeight(height = 173.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .requiredWidth(width = 325.dp)
-                        .requiredHeight(height = 173.dp)
-                        .clip(shape = RoundedCornerShape(24.dp))
-                        .background(color = AppColors.color_Gray_50) // Replaced Color.White
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.image_30_removebg_preview_1),
-                    contentDescription = "image_30-removebg-preview 1",
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = (-52).dp, y = 12.dp)
-                        .requiredWidth(width = 274.dp)
-                        .requiredHeight(height = 182.dp)
-                        .clip(shape = RoundedCornerShape(24.dp))
-                )
-                Text(
-                    text = "CARDIOLOGIST",
-                    color = AppColors.color_black, // Replaced Color(0xff001133)
-                    lineHeight = 14.em,
-                    style = AppTypes.type_Typography_Body_Small, // Closest to 10sp, Medium
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 130.dp, y = 25.dp)
-                        .requiredWidth(width = 74.dp)
-                        .requiredHeight(height = 14.dp)
-                )
-                Text(
-                    text = "Dr. Maria Watson",
-                    color = AppColors.color_black, // Replaced Color(0xff001133)
-                    lineHeight = 8.31.em,
-                    style = AppTypes.type_Body_Large_400, // Closest to 16.84sp, Medium
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 130.dp, y = 45.dp)
-                )
-                Text(
-                    text = "10.00 AM - 12.00 PM",
-                    color = AppColors.color_Gray_700, // Replaced Color(0xff001133).copy(alpha = 0.5f)
-                    lineHeight = 10.9.em,
-                    style = AppTypes.type_Typography_Body_Small, // Closest to 12.84sp
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 130.dp, y = 69.dp)
-                )
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = 169.dp, y = 114.dp)
-                        .requiredWidth(width = 136.dp)
-                        .requiredHeight(height = 39.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .requiredWidth(width = 136.dp)
-                            .requiredHeight(height = 39.dp)
-                            .clip(shape = RoundedCornerShape(9.dp))
-                            .background(color = AppColors.color_gradient_start) // Replaced Color(0xffc4c4c4)
-                    )
-                    Text(
-                        text = "Get Appointment",
-                        color = AppColors.color_white, // Replaced Color(0xff001133)
-                        lineHeight = 12.92.em,
-                        style = AppTypes.type_Typography_Body_Small, // Closest to 10.84sp, Medium
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .offset(x = 24.dp, y = 12.dp)
+                            .fillMaxSize()
+                            .offset(x = 44.dp, y = 0.dp)
                     )
                 }
             }
         }
-
-        // Bottom Navigation
-        Box(
+        // Four panels in a 2x2 grid
+        FourPanels(
             modifier = Modifier
-                .align(Alignment.TopStart)
-                .offset(x = 25.dp, y = 720.dp)
+                .align(alignment = Alignment.TopStart)
+                .offset(y = 165.dp)
+                .padding(horizontal = 8.dp)
+                .requiredHeight(height = 185.dp) // 2 rows of 85.dp + 16.dp spacing
+        )
+        // Transaction table
+        TransactionTable(
+            modifier = Modifier
+                .align(alignment = Alignment.TopStart)
+                .offset(x = 25.dp, y = 403.dp)
                 .requiredWidth(width = 325.dp)
-                .requiredHeight(height = 67.dp)
+                .requiredHeight(height = 199.dp)
+        )
+        // Bar chart
+        BarChart(
+            modifier = Modifier
+                .align(alignment = Alignment.TopStart)
+                .offset(x = 25.dp, y = 661.dp)
+                .requiredWidth(width = 325.dp)
+                .requiredHeight(height = 245.dp)
+        )
+    }
+}
+
+@Composable
+fun FourPanels(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(15.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .requiredWidth(width = 325.dp)
-                    .requiredHeight(height = 67.dp)
-                    .clip(shape = RoundedCornerShape(29.dp))
-                    .background(color = AppColors.color_Gray_50) // Replaced Color.White
+            // Panel 1: Detected
+            Panel(
+                iconRes = R.drawable.money_tag_1,
+                iconColor = null, // No tint
+                circleColor = Color(0xfffff5d9),
+                title = "Detected",
+                subtitle = "12",
+                modifier = Modifier.weight(1f)
             )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 21.dp, y = 15.dp)
-                    .requiredSize(size = 39.dp)
-                    .clip(shape = CircleShape)
-                    .background(color = AppColors.color_Primary_500) // Replaced Color(0xff518cff)
-                    .shadow(elevation = 4.dp, shape = CircleShape)
+            // Panel 2: Seizure Free
+            Panel(
+                iconRes = R.drawable.group,
+                iconColor = null, // No tint
+                circleColor = Color(0xffe7edff),
+                title = "Seizure Free",
+                subtitle = "12 Days",
+                modifier = Modifier.weight(1f)
             )
-            Image(
-                painter = painterResource(id = R.drawable.frame_2),
-                contentDescription = "Frame 2",
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = 32.dp, y = 25.dp)
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(15.dp)
+        ) {
+            // Panel 3: Expense
+            Panel(
+                iconRes = R.drawable._01_medical,
+                iconColor = null, // No tint
+                circleColor = Color(0xffffe0eb),
+                title = "Expense",
+                subtitle = "$3,460",
+                modifier = Modifier.weight(1f)
+            )
+            // Panel 4: Total Saving
+            Panel(
+                iconRes = R.drawable._03_saving,
+                iconColor = Color(0xff16dbcc), // Tint applied
+                circleColor = Color(0xffdcfaf8),
+                title = "Total Saving",
+                subtitle = "$7,920",
+                modifier = Modifier.weight(1f)
             )
         }
     }
 }
 
-@Preview(heightDp = 812)
 @Composable
-private fun HomePreview() {
-    Home(Modifier)
+fun Panel(
+    iconRes: Int,
+    iconColor: Color?,
+    circleColor: Color,
+    title: String,
+    subtitle: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(85.dp)
+            .clip(RoundedCornerShape(15.dp))
+            .background(Color.White)
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Circle with icon
+            Box(
+                modifier = Modifier
+                    .size(50.dp) // 30.dp circle + 10.dp padding
+                    .clip(CircleShape)
+                    .background(circleColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = title,
+                    colorFilter = iconColor?.let { ColorFilter.tint(it) },
+                    modifier = Modifier.size(30.dp) // Icon size
+                )
+            }
+            // Text column
+            Column(
+                modifier = Modifier.fillMaxHeight(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = title,
+                    color = Color(0xff718ebf),
+                    style = TextStyle(fontSize = 12.sp)
+                )
+                Text(
+                    text = subtitle,
+                    color = Color(0xff232323),
+                    style = TextStyle(fontSize = 16.sp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TransactionTable(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(15.dp))
+            .background(Color.White)
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Row 1: Spotify Subscription
+            TransactionRow(
+                iconRes = R.drawable.renew_1,
+                iconColor = null, // No tint
+                circleColor = Color(0xffdcfaf8),
+                title = "Spotify Subscription",
+                subtitle = "25 Jan 2021",
+                amount = "-$150",
+                amountColor = Color(0xfffe5c73)
+            )
+            // Row 2: Mobile Service
+            TransactionRow(
+                iconRes = R.drawable.group__1_,
+                iconColor = null, // No tint
+                circleColor = Color(0xffe7edff),
+                title = "Mobile Service",
+                subtitle = "25 Jan 2021",
+                amount = "-$340",
+                amountColor = Color(0xfffe5c73)
+            )
+            // Row 3: Emilly Wilson
+            TransactionRow(
+                iconRes = R.drawable.user45,
+                iconColor = Color(0xffff82ac), // Tint applied
+                circleColor = Color(0xffffe0eb),
+                title = "Emilly Wilson",
+                subtitle = "25 Jan 2021",
+                amount = "+$780",
+                amountColor = Color(0xff16dbaa)
+            )
+        }
+    }
+}
+
+@Composable
+fun TransactionRow(
+    iconRes: Int,
+    iconColor: Color?,
+    circleColor: Color,
+    title: String,
+    subtitle: String,
+    amount: String,
+    amountColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(45.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Circle with icon
+        Box(
+            modifier = Modifier
+                .size(50.dp) // 30.dp icon + 10.dp padding
+                .clip(CircleShape)
+                .background(circleColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = iconRes),
+                contentDescription = title,
+                colorFilter = iconColor?.let { ColorFilter.tint(it) },
+                modifier = Modifier.size(30.dp) // Icon size
+            )
+        }
+        // Text column
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = title,
+                color = Color(0xff333b69),
+                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            )
+            Text(
+                text = subtitle,
+                color = Color(0xff718ebf),
+                style = TextStyle(fontSize = 12.sp)
+            )
+        }
+        // Amount
+        Text(
+            text = amount,
+            color = amountColor,
+            textAlign = TextAlign.End,
+            style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Medium),
+            modifier = Modifier.width(60.dp)
+        )
+    }
+}
+
+@Composable
+fun BarChart(modifier: Modifier = Modifier) {
+    // Sample data based on original heights (scaled to 0-1, max height 153.dp)
+    val barData = listOf(
+        BarData("Sat", 1.0f, 1.0f), // 153.dp
+        BarData("Sun", 0.934f, 0.934f), // 143.dp
+        BarData("Mon", 0.888f, 0.888f), // 136.dp
+        BarData("Tue", 0.843f, 0.843f), // 129.dp
+        BarData("Wed", 0.784f, 0.784f), // 120.dp
+        BarData("Thu", 0.627f, 0.627f), // 96.dp
+        BarData("Fri", 0.490f, 0.490f) // 75.dp
+    )
+    val maxHeight = 153.dp // Max height from original chart
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(15.dp))
+            .background(Color.White)
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Legend
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(15.dp)
+                    .padding(horizontal = 127.dp), // Center legend within 325.dp width
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(Color(0xff4c78ff))
+                    )
+                    Text(
+                        text = "Seizure",
+                        color = Color(0xff718ebf),
+                        style = TextStyle(fontSize = 12.sp)
+                    )
+                }
+                Row(
+                    modifier = Modifier,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(Color(0xffff82ac))
+                    )
+                    Text(
+                        text = "Not Seizure",
+                        color = Color(0xff718ebf),
+                        style = TextStyle(fontSize = 12.sp)
+                    )
+                }
+            }
+            // Chart
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(178.dp), // Matches original chart area
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                barData.forEach { data ->
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        // Bar
+                        Box(
+                            modifier = Modifier
+                                .width(25.dp)
+                                .fillMaxHeight(data.seizureHeight)
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(Color(0xff1814f3))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(MaterialTheme.shapes.small)
+                                    .background(Color(0xfffc7900))
+                            )
+                        }
+                        // Label
+                        Text(
+                            text = data.day,
+                            color = Color(0xff718ebf),
+                            textAlign = TextAlign.Center,
+                            style = TextStyle(fontSize = 12.sp),
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview(widthDp = 375, heightDp = 906)
+@Composable
+private fun Component13Preview() {
+    Component13(Modifier)
 }

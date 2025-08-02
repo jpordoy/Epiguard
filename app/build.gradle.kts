@@ -122,3 +122,6 @@ dependencies {
 
 }
 }
+dependencies {
+    implementation(libs.ads.mobile.sdk)
+}

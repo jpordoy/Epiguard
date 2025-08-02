@@ -5,12 +5,12 @@ import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.image.ImageProcessor
-import org.tensorflow.lite.support.image.ops.ResizeOp
-import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.DataType
+import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.image.ImageProcessor
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.ResizeOp
 import java.io.File
 import java.io.FileInputStream
 import java.nio.ByteBuffer
@@ -31,6 +31,7 @@ class TFLiteVideoHelper(context: Context) {
         .add(ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
         .add(NormalizeOp(0f, 255f))
         .build()
+    private val batchSize = 10 // Model expects a batch of 10 frames
 
     init {
         try {
@@ -41,10 +42,20 @@ class TFLiteVideoHelper(context: Context) {
             val declaredLength = assetFileDescriptor.declaredLength
             val modelBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
             interpreter = Interpreter(modelBuffer)
+            logModelInputShape() // Log model input shape for debugging
             Log.d("TFLiteVideoHelper", "Model loaded successfully")
         } catch (e: Exception) {
             Log.e("TFLiteVideoHelper", "Failed to load model: ${e.message}", e)
         }
+    }
+
+    // Log the model's input tensor shape for debugging
+    private fun logModelInputShape() {
+        interpreter?.let {
+            val inputTensor = it.getInputTensor(0)
+            Log.d("TFLiteVideoHelper", "Input Tensor Shape: ${inputTensor.shape().contentToString()}")
+            Log.d("TFLiteVideoHelper", "Input Tensor Data Type: ${inputTensor.dataType()}")
+        } ?: Log.e("TFLiteVideoHelper", "Interpreter not initialized")
     }
 
     fun classifyVideo(
@@ -56,7 +67,6 @@ class TFLiteVideoHelper(context: Context) {
         val results = mutableListOf<VideoPredictionResult>()
         val retriever = MediaMetadataRetriever()
         try {
-            // Validate Uri
             Log.d("TFLiteVideoHelper", "Processing video URI: $videoUri")
             when (videoUri.scheme) {
                 "file" -> {
@@ -88,7 +98,6 @@ class TFLiteVideoHelper(context: Context) {
                 }
             }
 
-            // Set data source
             try {
                 retriever.setDataSource(context, videoUri)
             } catch (e: Exception) {
@@ -97,7 +106,6 @@ class TFLiteVideoHelper(context: Context) {
                 return
             }
 
-            // Get duration
             val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
             Log.d("TFLiteVideoHelper", "Video duration: ${durationMs}ms, interval: ${intervalMs}ms")
 
@@ -107,28 +115,56 @@ class TFLiteVideoHelper(context: Context) {
                 return
             }
 
-            // Process frames
-            for (timeMs in 0 until durationMs step intervalMs) {
-                val bitmap = retriever.getFrameAtTime(timeMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST)
+            // Collect frames in batches of `batchSize` (10)
+            val frames = mutableListOf<Bitmap>()
+            var currentTimeMs = 0L
+            while (currentTimeMs < durationMs) {
+                val originalBitmap = retriever.getFrameAtTime(
+                    currentTimeMs * 1000,
+                    MediaMetadataRetriever.OPTION_CLOSEST
+                )
+                val bitmap = originalBitmap?.let {
+                    if (it.config != Bitmap.Config.ARGB_8888) {
+                        it.copy(Bitmap.Config.ARGB_8888, true)
+                    } else {
+                        it
+                    }
+                }
+
                 if (bitmap != null) {
-                    val result = runInference(listOf(bitmap))
+                    frames.add(bitmap)
+                    Log.d("TFLiteVideoHelper", "Extracted frame at ${currentTimeMs}ms")
+                } else {
+                    Log.w("TFLiteVideoHelper", "No bitmap extracted at ${currentTimeMs}ms")
+                }
+
+                // When we have enough frames or reach the end, run inference
+                if (frames.size == batchSize || (currentTimeMs + intervalMs >= durationMs && frames.isNotEmpty())) {
+                    val result = runInference(frames)
                     val softmaxed = softmax(result)
                     val predictedIndex = softmaxed.indices.maxByOrNull { softmaxed[it] } ?: 0
                     val label = labels.getOrElse(predictedIndex) { "Unknown" }
                     val confidence = softmaxed.getOrElse(predictedIndex) { 0f }
                     results.add(
                         VideoPredictionResult(
-                            timestamp = timeMs,
+                            timestamp = currentTimeMs,
                             predictedLabel = label,
                             confidence = confidence
                         )
                     )
-                    Log.d("TFLiteVideoHelper", "Prediction at ${timeMs}ms: $label ($confidence)")
-                    bitmap.recycle()
-                } else {
-                    Log.w("TFLiteVideoHelper", "No bitmap extracted at ${timeMs}ms")
+                    Log.d("TFLiteVideoHelper", "Prediction at ${currentTimeMs}ms: $label ($confidence)")
+
+                    // Recycle bitmaps
+                    frames.forEach { frame ->
+                        frame.recycle()
+                        originalBitmap?.takeIf { it != frame }?.recycle()
+                    }
+                    frames.clear()
                 }
+
+                currentTimeMs += intervalMs
             }
+
             Log.d("TFLiteVideoHelper", "Classification results: $results")
         } catch (e: Exception) {
             Log.e("TFLiteVideoHelper", "Classification failed: ${e.message}", e)
@@ -147,27 +183,41 @@ class TFLiteVideoHelper(context: Context) {
         val interpreter = interpreter ?: return FloatArray(2).also {
             Log.e("TFLiteVideoHelper", "Interpreter not initialized")
         }
-        val inputBuffer = ByteBuffer.allocateDirect(1 * 224 * 224 * 3 * 4)
+
+        // Allocate buffer for batchSize frames (10 * 224 * 224 * 3 * 4 bytes)
+        val inputBuffer = ByteBuffer.allocateDirect(batchSize * 224 * 224 * 3 * 4)
         inputBuffer.order(ByteOrder.nativeOrder())
 
-        val frame = frames.firstOrNull() ?: return FloatArray(2).also {
-            Log.w("TFLiteVideoHelper", "No frame provided for inference")
-        }
-        var tensorImage = TensorImage(DataType.FLOAT32)
-        try {
-            tensorImage.load(frame)
-            tensorImage = imageProcessor.process(tensorImage)
-        } catch (e: Exception) {
-            Log.e("TFLiteVideoHelper", "Failed to process image: ${e.message}", e)
-            return FloatArray(2)
+        // Process frames (pad with zeros if fewer than batchSize frames)
+        val processedFrames = frames.take(batchSize).map { frame ->
+            var tensorImage = TensorImage(DataType.FLOAT32)
+            try {
+                tensorImage.load(frame)
+                tensorImage = imageProcessor.process(tensorImage)
+                tensorImage
+            } catch (e: Exception) {
+                Log.e("TFLiteVideoHelper", "Failed to process image: ${e.message}", e)
+                null
+            }
         }
 
-        val floatBuffer = tensorImage.buffer.asFloatBuffer()
-        val flatFrame = FloatArray(224 * 224 * 3)
-        floatBuffer.get(flatFrame)
+        // If we don't have enough frames, pad with zeros
+        val paddedFrames = processedFrames + List(batchSize - processedFrames.size) { null }
+        if (paddedFrames.any { it == null }) {
+            Log.w("TFLiteVideoHelper", "Padding frames with zeros: ${paddedFrames.size}/$batchSize")
+        }
 
-        for (value in flatFrame) {
-            inputBuffer.putFloat(value)
+        // Fill the input buffer
+        for (tensorImage in paddedFrames) {
+            val flatFrame = if (tensorImage != null) {
+                val floatBuffer = tensorImage.buffer.asFloatBuffer()
+                FloatArray(224 * 224 * 3).also { floatBuffer.get(it) }
+            } else {
+                FloatArray(224 * 224 * 3) { 0f } // Pad with zeros
+            }
+            for (value in flatFrame) {
+                inputBuffer.putFloat(value)
+            }
         }
 
         inputBuffer.rewind()
