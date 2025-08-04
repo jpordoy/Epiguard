@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
@@ -84,6 +85,100 @@ import com.epilabs.epiguard.ui.theme.OrangeYellow1
 import com.epilabs.epiguard.ui.theme.OrangeYellow2
 import com.epilabs.epiguard.ui.theme.OrangeYellow3
 import com.epilabs.epiguard.ui.theme.TextWhite
+
+
+@Composable
+fun NewHeader(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .requiredWidth(width = 375.dp)
+            .background(AppColors.color_Gray_50)
+    ) {
+        Box(
+            modifier = Modifier
+                .requiredWidth(width = 375.dp)
+                .requiredHeight(height = 140.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = Color.White)
+            )
+            Box(
+                modifier = Modifier
+                    .align(alignment = Alignment.TopStart)
+                    .offset(x = 25.dp, y = 25.dp)
+                    .requiredWidth(width = 324.dp)
+                    .requiredHeight(height = 35.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(x = 289.dp, y = 0.dp)
+                        .requiredSize(size = 35.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.mask_group),
+                        contentDescription = "pexels-christina-morillo-1181690 1",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(shape = CircleShape)
+                    )
+                }
+                Text(
+                    text = "EpiGuard",
+                    color = Color(0xff343c6a),
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(fontSize = 20.sp),
+                    modifier = Modifier.fillMaxSize()
+                )
+                Image(
+                    painter = painterResource(id = R.drawable.menu1),
+                    contentDescription = "Group 692",
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(x = 0.dp, y = 10.dp)
+                        .requiredWidth(width = 14.dp)
+                        .requiredHeight(height = 18.dp)
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .align(alignment = Alignment.TopStart)
+                    .offset(x = 25.dp, y = 80.dp)
+                    .requiredWidth(width = 325.dp)
+                    .requiredHeight(height = 40.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(shape = RoundedCornerShape(40.dp))
+                        .background(color = Color(0xfff5f7fa))
+                )
+                Box(
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(x = 19.dp, y = 12.dp)
+                        .requiredWidth(width = 158.dp)
+                        .requiredHeight(height = 16.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.search_normal),
+                        contentDescription = "magnifying-glass 1",
+                        colorFilter = ColorFilter.tint(Color(0xff718ebf))
+                    )
+                    Text(
+                        text = "Search for something",
+                        color = Color(0xff8ba3cb),
+                        style = TextStyle(fontSize = 13.sp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .offset(x = 44.dp, y = 0.dp)
+                    )
+                }
+            }
+        }
+    }}
 
 // Data class for half-circle progress bar
 data class ProgressBarData(
@@ -180,7 +275,7 @@ fun HalfCircleProgressBar(
             Text(
                 text = "Seizures Detected",
                 color = AppColors.color_Gray_900,
-                style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Medium),
+                style = TextStyle(fontSize = 12.sp),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .padding(vertical = 12.dp)
@@ -204,12 +299,12 @@ fun SeizureFreeDaysDisplay(
             .padding(8.dp) // Reduced outer padding for tighter fit
             .clip(RoundedCornerShape(12.dp))
             .background(AppColors.color_Gray_White)
-            .shadow(elevation = 0.5.dp, shape = RoundedCornerShape(12.dp))
+            .shadow(elevation = 0.5.dp, shape = RoundedCornerShape(11.dp))
             .padding(12.dp), // Reduced inner padding
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Seizure-Free Streak",
+            text = "Seizure Free",
             color = AppColors.color_Gray_900,
             style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 4.dp)
@@ -285,10 +380,13 @@ fun SeizureStackedBarChart(
 ) {
     Box(
         modifier = modifier
-            .fillMaxWidth()
             .height(270.dp)
+            .padding(horizontal = 10.dp) // Reduced inner padding
             .clip(RoundedCornerShape(12.dp))
             .background(AppColors.color_Gray_White)
+            .padding(horizontal = 6.dp, vertical = 7.5.dp), // Consistent padding
+
+
 
     ) {
         Text(
@@ -304,7 +402,6 @@ fun SeizureStackedBarChart(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .offset(x = 0.dp, y = 31.dp)
-                .fillMaxWidth()
         ) {
             Box(
                 modifier = Modifier
@@ -370,7 +467,6 @@ fun SeizureStackedBarChart(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .offset(x = 18.dp, y = 43.dp)
-                    .requiredHeight(171.dp) // Adjusted to fit within 204.dp
             ) {
                 // Y-axis labels (0 to 10)
                 listOf(10, 8, 6, 4, 2, 0).forEachIndexed { index, value ->
@@ -388,14 +484,14 @@ fun SeizureStackedBarChart(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .offset(x = 30.dp, y = 11.dp)
+                        .offset(x = 20.dp, y = 11.dp)
                         .requiredHeight(142.5.dp) // 171.dp - 28.5.dp for labels
                 ) {
                     repeat(7) { index ->
                         HorizontalDivider(
                             modifier = Modifier
                                 .requiredHeight(1.dp)
-                                .offset(x = 0.dp, y = (index * 28.5).dp),
+                                .offset(x = 0.dp, y = (index * 21.5).dp),
                             color = Color(0xfff3f3f5)
                         )
                     }
@@ -439,9 +535,18 @@ fun SeizureStackedBarChart(
                                     .clip(RoundedCornerShape(30.dp))
                                     .background(AppColors.color_violet) // Orange
                             )
-                            // Week label
+                            // Day label
                             Text(
-                                text = "W${index + 1}",
+                                text = when (index % 7) {
+                                    0 -> "Mon"
+                                    1 -> "Tue"
+                                    2 -> "Wed"
+                                    3 -> "Thu"
+                                    4 -> "Fri"
+                                    5 -> "Sat"
+                                    6 -> "Sun"
+                                    else -> "W${index + 1}"
+                                },
                                 color = Color(0xff718ebf),
                                 textAlign = TextAlign.Center,
                                 style = TextStyle(fontSize = 12.sp),
@@ -484,9 +589,8 @@ fun Dashboard(navController: NavController, userId: Int) {
                 .verticalScroll(scrollState)
                 .padding(bottom = 80.dp) // Space for BottomMenu
         ) {
-            UserHeader()
+            NewHeader()
             GreetingText(firstName = firstName.value)
-            SearchBar()
             ChipSection(chips = listOf("Add Device", "Seizure Detector", "Live Feed"))
             CurrentMeditation()
             FeatureSection(
@@ -509,7 +613,7 @@ fun Dashboard(navController: NavController, userId: Int) {
                     ),
                     Feature(
                         title = "Test Lab",
-                        imageId = R.drawable.untitled_design,
+                        imageId = R.drawable.ai,
                         darkColor = OrangeYellow1,
                         mediumColor = OrangeYellow2,
                         lightColor = OrangeYellow3,
@@ -546,7 +650,6 @@ fun Dashboard(navController: NavController, userId: Int) {
                         .weight(1f) // 50% of screen width
                         .fillMaxWidth() // Ensure full width within weight
                 )
-                Spacer(modifier = Modifier.width(7.5.dp)) // Gap between charts
                 SeizureFreeDaysDisplay(
                     days = 42,
                     goal = 60,
@@ -579,10 +682,10 @@ fun Dashboard(navController: NavController, userId: Int) {
         BottomMenu(
             items = listOf(
                 BottomMenuContent("Home", R.drawable.ic_home),
-                BottomMenuContent("Detector", R.drawable.ic_bubble),
-                BottomMenuContent("Ai Lab", R.drawable.ic_moon),
-                BottomMenuContent("Contacts", R.drawable.ic_music),
-                BottomMenuContent("Settings", R.drawable.ic_profile)
+                BottomMenuContent("Detector", R.drawable.ic_videocam),
+                BottomMenuContent("Models", R.drawable.codesandbox),
+                BottomMenuContent("Contacts", R.drawable.users1),
+                BottomMenuContent("Settings", R.drawable.settings)
             ),
             modifier = Modifier.align(Alignment.BottomCenter)
         )
