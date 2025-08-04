@@ -493,6 +493,7 @@ fun BarChart(modifier: Modifier = Modifier) {
     }
 }
 
+
 @Preview(widthDp = 375, heightDp = 906)
 @Composable
 private fun Component13Preview() {

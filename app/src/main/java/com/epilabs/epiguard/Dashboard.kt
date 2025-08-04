@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -29,6 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Badge
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,11 +50,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,7 +85,379 @@ import com.epilabs.epiguard.ui.theme.OrangeYellow2
 import com.epilabs.epiguard.ui.theme.OrangeYellow3
 import com.epilabs.epiguard.ui.theme.TextWhite
 
+// Data class for half-circle progress bar
+data class ProgressBarData(
+    val percentage: Float, // 0.0f to 100.0f
+    val centerText: String,
+    val title: String,
+    val goal: String,
+    val remaining: String
+)
 
+// Composable for half-circle progress bar (Seizure Detection Rate)
+@Composable
+fun HalfCircleProgressBar(
+    data: ProgressBarData,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(160.dp) // Fixed height to align with SeizureFreeDaysDisplay
+            .padding(8.dp) // Reduced outer padding for tighter fit
+            .clip(RoundedCornerShape(10.dp))
+            .background(AppColors.color_white)
+            .shadow(elevation = 0.5.dp, shape = RoundedCornerShape(10.dp))
+            .padding(12.dp), // Reduced inner padding
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Title
+        Text(
+            text = data.title,
+            color = AppColors.color_Gray_900,
+            style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(bottom = 1.dp)
+        )
+
+
+
+
+        // Divider
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .padding(bottom = 8.dp),
+            color = AppColors.color_Gray_50
+        )
+
+        // Gauge
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(70.dp), // Reduced height for proportionality
+            contentAlignment = Alignment.Center
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val width = size.width
+                val height = size.height
+                val radius = width * 0.4f // Adjust radius to fit
+                Offset(width / 2f, height) // Center at bottom
+
+                // Background arc (full semi-circle)
+                drawArc(
+                    color = AppColors.color_Gray_50,
+                    startAngle = 180f,
+                    sweepAngle = 180f,
+                    useCenter = false,
+                    style = Stroke(width = 12.dp.toPx()), // Reduced stroke width
+                    topLeft = Offset(width / 2f - radius, height - radius),
+                    size = androidx.compose.ui.geometry.Size(radius * 2, radius * 2)
+                )
+
+                // Progress arc
+                drawArc(
+                    color = AppColors.color_violet,
+                    startAngle = 180f,
+                    sweepAngle = (data.percentage / 100f) * 180f,
+                    useCenter = false,
+                    style = Stroke(width = 12.dp.toPx()),
+                    topLeft = Offset(width / 2f - radius, height - radius),
+                    size = androidx.compose.ui.geometry.Size(radius * 2, radius * 2)
+                )
+            }
+
+            // Percentage below gauge
+            Text(
+                text = "${data.percentage.toInt()}%",
+                color = AppColors.color_Gray_900,
+                style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .offset(y = 18.dp)
+            )
+
+            // Descriptive text below percentage
+            Text(
+                text = "Seizures Detected",
+                color = AppColors.color_Gray_900,
+                style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Medium),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .offset(y = 50.dp)
+            )
+        }
+    }
+}
+
+// Composable for seizure-free days display
+@Composable
+fun SeizureFreeDaysDisplay(
+    days: Int,
+    goal: Int,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(160.dp) // Fixed height to align with HalfCircleProgressBar
+            .padding(8.dp) // Reduced outer padding for tighter fit
+            .clip(RoundedCornerShape(12.dp))
+            .background(AppColors.color_Gray_White)
+            .shadow(elevation = 0.5.dp, shape = RoundedCornerShape(12.dp))
+            .padding(12.dp), // Reduced inner padding
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Seizure-Free Streak",
+            color = AppColors.color_Gray_900,
+            style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+        Box(
+            modifier = Modifier
+                .size(80.dp) // Reduced size for proportionality
+                .padding(8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                size.width / 2
+                drawArc(
+                    color = AppColors.color_Gray_50,
+                    startAngle = -90f,
+                    sweepAngle = 360f,
+                    useCenter = false,
+                    style = Stroke(width = 6.dp.toPx()) // Reduced stroke width
+                )
+                drawArc(
+                    color = AppColors.color_violet,
+                    startAngle = -90f,
+                    sweepAngle = (days.toFloat() / goal) * 360f,
+                    useCenter = false,
+                    style = Stroke(width = 6.dp.toPx())
+                )
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "$days",
+                    color = AppColors.color_Gray_900,
+                    style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
+                    modifier = Modifier
+                )
+                Text(
+                    text = "Days",
+                    color = AppColors.color_Gray_900,
+                    style = TextStyle(fontSize = 12.sp),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+
+                )
+            }
+        }
+        Row(
+            modifier = Modifier.padding(top = 4.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(14.dp)
+                    .background(AppColors.color_violet)
+            )
+            Text(
+                text = "Goal: $goal Days",
+                color = AppColors.color_Gray_900,
+                style = TextStyle(fontSize = 10.sp),
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun SeizureStackedBarChart(
+    data: List<Pair<Int, Int>> = listOf( // Default to 10 bars of sample data
+        Pair(2, 5), Pair(1, 6), Pair(3, 4), Pair(2, 5), Pair(1, 6),
+        Pair(3, 4), Pair(2, 5), Pair(6, 6), Pair(7, 4), Pair(7, 5)
+    ), // List of (seizureDays, seizureFreeDays) per period
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(270.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(AppColors.color_Gray_White)
+
+    ) {
+        Text(
+            text = "Seizure Days Tracking",
+            color = Color(0xff343c6a),
+            style = TextStyle(fontSize = 16.sp),
+            modifier = Modifier
+                .padding(start = 16.dp, top = 16.dp, bottom = 16.dp)
+                .zIndex(1f)
+
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .offset(x = 0.dp, y = 31.dp)
+                .fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(Color.White)
+            )
+            // Legend
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .offset(x = 16.dp, y = 17.dp) // Left-aligned for scrollable content
+                    .requiredHeight(15.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .requiredHeight(15.dp)
+                ) {
+                    Text(
+                        text = "Seizure Days",
+                        color = Color(0xff718ebf),
+                        style = TextStyle(fontSize = 12.sp),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .offset(x = 135.dp, y = 0.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .offset(x = 115.dp, y = 2.dp)
+                            .requiredSize(12.dp)
+                            .clip(CircleShape)
+                            .background(AppColors.color_Error_500) // Blue for seizure days
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .offset(x = 245.dp, y = 0.dp)
+                        .requiredWidth(77.dp)
+                        .requiredHeight(15.dp)
+                ) {
+                    Text(
+                        text = "Seizure-Free Days",
+                        color = Color(0xff718ebf),
+                        style = TextStyle(fontSize = 12.sp),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .offset(x = 18.dp, y = 0.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .offset(x = 0.dp, y = 2.dp)
+                            .requiredSize(12.dp)
+                            .clip(CircleShape)
+                            .background(AppColors.color_violet) // Orange for seizure-free days
+                    )
+                }
+            }
+            // Chart area
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .offset(x = 18.dp, y = 43.dp)
+                    .requiredHeight(171.dp) // Adjusted to fit within 204.dp
+            ) {
+                // Y-axis labels (0 to 10)
+                listOf(10, 8, 6, 4, 2, 0).forEachIndexed { index, value ->
+                    Text(
+                        text = "$value",
+                        color = Color(0xff718ebf),
+                        textAlign = TextAlign.End,
+                        style = TextStyle(fontSize = 12.sp),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .offset(x = 0.dp, y = (index * 28.5).dp) // 171.dp / 6 = 28.5.dp per step
+                    )
+                }
+                // Grid lines
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .offset(x = 30.dp, y = 11.dp)
+                        .requiredHeight(142.5.dp) // 171.dp - 28.5.dp for labels
+                ) {
+                    repeat(7) { index ->
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .requiredHeight(1.dp)
+                                .offset(x = 0.dp, y = (index * 28.5).dp),
+                            color = Color(0xfff3f3f5)
+                        )
+                    }
+                }
+                // Bars in LazyRow for horizontal scrolling
+                LazyRow(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .offset(x = 30.dp, y = 11.dp)
+                        .fillMaxWidth()
+                        .requiredHeight(142.5.dp)
+                ) {
+                    items(7) { index ->
+                        val (seizureDays, seizureFreeDays) = data.getOrElse(index) { Pair(0, 0) }
+                        val maxHeight = 150.dp // Max bar height
+                        val seizureHeight = (seizureDays.toFloat() / 10 * maxHeight.value).dp
+                        val seizureFreeHeight = (seizureFreeDays.toFloat() / 10 * maxHeight.value).dp
+
+                        Box(
+                            modifier = Modifier
+                                .requiredWidth(44.dp) // Spacing per bar
+                                .requiredHeight(177.5.dp)
+                        ) {
+                            // Seizure days bar
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .offset(x = 5.dp, y = (maxHeight - seizureHeight))
+                                    .requiredWidth(7.dp)
+                                    .requiredHeight(seizureHeight)
+                                    .clip(RoundedCornerShape(30.dp))
+                                    .background(AppColors.color_Error_500) // Blue
+                            )
+                            // Seizure-free days bar
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .offset(x = 15.dp, y = (maxHeight - seizureFreeHeight))
+                                    .requiredWidth(7.dp)
+                                    .requiredHeight(seizureFreeHeight)
+                                    .clip(RoundedCornerShape(30.dp))
+                                    .background(AppColors.color_violet) // Orange
+                            )
+                            // Week label
+                            Text(
+                                text = "W${index + 1}",
+                                color = Color(0xff718ebf),
+                                textAlign = TextAlign.Center,
+                                style = TextStyle(fontSize = 12.sp),
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .offset(x = 5.dp, y = (maxHeight + 13.dp))
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Dashboard composable with charts in the correct order
 @ExperimentalFoundationApi
 @Composable
 fun Dashboard(navController: NavController, userId: Int) {
@@ -104,61 +481,115 @@ fun Dashboard(navController: NavController, userId: Int) {
     Box(modifier = Modifier.background(AppColors.color_Gray_50).fillMaxSize()) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
                 .verticalScroll(scrollState)
                 .padding(bottom = 80.dp) // Space for BottomMenu
         ) {
             UserHeader()
             GreetingText(firstName = firstName.value)
-            PercentageCircleRow()
-            //SearchBar()
-            ChipSection(chips = listOf("Add Device", "Seizure Detector", "Live Feed",))
+            SearchBar()
+            ChipSection(chips = listOf("Add Device", "Seizure Detector", "Live Feed"))
             CurrentMeditation()
-            FeatureSection(features = listOf(
-                Feature(
-                    title = "Seizure Detector",
-                    imageId = R.drawable.epiguard, // Replace with actual resource
-                    darkColor = BlueViolet1,
-                    mediumColor = BlueViolet2,
-                    lightColor = BlueViolet3,
-                    route = "model_classification/$userId"
+            FeatureSection(
+                features = listOf(
+                    Feature(
+                        title = "Seizure Detector",
+                        imageId = R.drawable.epiguard,
+                        darkColor = BlueViolet1,
+                        mediumColor = BlueViolet2,
+                        lightColor = BlueViolet3,
+                        route = "model_classification/$userId"
+                    ),
+                    Feature(
+                        title = "Tracker and Analytics",
+                        imageId = R.drawable.analytics,
+                        darkColor = LightGreen1,
+                        mediumColor = LightGreen2,
+                        lightColor = LightGreen3,
+                        route = "add_contact/$userId"
+                    ),
+                    Feature(
+                        title = "Test Lab",
+                        imageId = R.drawable.untitled_design,
+                        darkColor = OrangeYellow1,
+                        mediumColor = OrangeYellow2,
+                        lightColor = OrangeYellow3,
+                        route = "view_contacts/$userId"
+                    ),
+                    Feature(
+                        title = "Contacts and Alerts",
+                        imageId = R.drawable.family,
+                        darkColor = Beige1,
+                        mediumColor = Beige2,
+                        lightColor = Beige3,
+                        route = "upload_video/$userId"
+                    )
                 ),
-                Feature(
-                    title = "Tracker and Analytics",
-                    imageId = R.drawable.analytics, // Replace with actual resource
-                    darkColor = LightGreen1,
-                    mediumColor = LightGreen2,
-                    lightColor = LightGreen3,
-                    route = "add_contact/$userId"
-                ),
-                Feature(
-                    title = "Test Lab",
-                    imageId = R.drawable.untitled_design, // Replace with actual resource
-                    darkColor = OrangeYellow1,
-                    mediumColor = OrangeYellow2,
-                    lightColor = OrangeYellow3,
-                    route = "view_contacts/$userId"
-                ),
-                Feature(
-                    title = "Contacts and Alerts",
-                    imageId = R.drawable.family, // Replace with actual resource
-                    darkColor = Beige1,
-                    mediumColor = Beige2,
-                    lightColor = Beige3,
-                    route = "upload_video/$userId"
+                navController = navController,
+                userId = userId
+            )
+            // Row for HalfCircleProgressBar and SeizureFreeDaysDisplay
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp, vertical = 7.5.dp), // Consistent padding
+                horizontalArrangement = Arrangement.SpaceBetween // Space charts to left and right
+            ) {
+                HalfCircleProgressBar(
+                    data = ProgressBarData(
+                        percentage = 72f,
+                        centerText = "Seizure\nEvents",
+                        title = "Seizure Detection Rate",
+                        goal = "$100",
+                        remaining = "$28"
+                    ),
+                    modifier = Modifier
+                        .weight(1f) // 50% of screen width
+                        .fillMaxWidth() // Ensure full width within weight
                 )
-            ), navController = navController, userId = userId)
+                Spacer(modifier = Modifier.width(7.5.dp)) // Gap between charts
+                SeizureFreeDaysDisplay(
+                    days = 42,
+                    goal = 60,
+                    modifier = Modifier
+                        .weight(1f) // 50% of screen width
+                        .fillMaxWidth() // Ensure full width within weight
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp), // Consistent padding
+                horizontalArrangement = Arrangement.SpaceBetween // Space charts to left and right
+            ) {            // Stacked bar chart below
+                SeizureStackedBarChart(
+                    data = listOf(
+                        Pair(2, 5), // Week 1: 2 seizure days, 5 seizure-free
+                        Pair(1, 6), // Week 2
+                        Pair(3, 4),  // Week 3
+                        Pair(6, 6),
+                        Pair(7, 4),
+                        Pair(7, 5),
+                        Pair(1, 6), // Week 2
+
+
+                    )
+                )
+            }
         }
-        BottomMenu(items = listOf(
-            BottomMenuContent("Home", R.drawable.ic_home),
-            BottomMenuContent("Detector", R.drawable.ic_bubble),
-            BottomMenuContent("Ai Lab", R.drawable.ic_moon),
-            BottomMenuContent("Contacts", R.drawable.ic_music),
-            BottomMenuContent("Settings", R.drawable.ic_profile)
-        ), modifier = Modifier.align(Alignment.BottomCenter))
+        BottomMenu(
+            items = listOf(
+                BottomMenuContent("Home", R.drawable.ic_home),
+                BottomMenuContent("Detector", R.drawable.ic_bubble),
+                BottomMenuContent("Ai Lab", R.drawable.ic_moon),
+                BottomMenuContent("Contacts", R.drawable.ic_music),
+                BottomMenuContent("Settings", R.drawable.ic_profile)
+            ),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
+// UserHeader composable
 @Composable
 fun UserHeader(modifier: Modifier = Modifier, name: String = "Fulano") {
     Row(
@@ -226,6 +657,7 @@ fun UserHeader(modifier: Modifier = Modifier, name: String = "Fulano") {
     }
 }
 
+// GreetingText composable
 @Composable
 fun GreetingText(modifier: Modifier = Modifier, firstName: String? = null) {
     Column(
@@ -247,6 +679,7 @@ fun GreetingText(modifier: Modifier = Modifier, firstName: String? = null) {
     }
 }
 
+// SearchBar composable
 @Composable
 fun SearchBar(modifier: Modifier = Modifier) {
     Box(
@@ -279,6 +712,7 @@ fun SearchBar(modifier: Modifier = Modifier) {
     }
 }
 
+// BottomMenu composable
 @Composable
 fun BottomMenu(
     items: List<BottomMenuContent>,
@@ -306,6 +740,7 @@ fun BottomMenu(
     }
 }
 
+// BottomMenuItem composable
 @Composable
 fun BottomMenuItem(
     item: BottomMenuContent,
@@ -335,6 +770,7 @@ fun BottomMenuItem(
     }
 }
 
+// ChipSection composable
 @Composable
 fun ChipSection(chips: List<String>) {
     var selectedChipIndex by remember { mutableIntStateOf(0) }
@@ -355,58 +791,7 @@ fun ChipSection(chips: List<String>) {
     }
 }
 
-@Composable
-fun PercentageCircleRow() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        PercentageCircle(percentage = 100, label = "Seizures Detected")
-        PercentageCircle(percentage = 100, label = "Seizure Free")
-        PercentageCircle(percentage = 100, label = "Text 3")
-    }
-}
-
-@Composable
-fun PercentageCircle(percentage: Int, label: String) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(90.dp) // consistent size
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            drawArc(
-                color = Color.LightGray,
-                startAngle = -90f,
-                sweepAngle = 360f,
-                useCenter = false,
-                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 10.dp.toPx())
-            )
-            drawArc(
-                color = ButtonBlue, // Or any app color
-                startAngle = -90f,
-                sweepAngle = (percentage / 100f) * 360f,
-                useCenter = false,
-                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 10.dp.toPx())
-            )
-        }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "$percentage%",
-                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            )
-            Text(
-                text = label,
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-        }
-    }
-}
-
-
+// CurrentMeditation composable
 @Composable
 fun CurrentMeditation() {
     Box(
@@ -415,25 +800,25 @@ fun CurrentMeditation() {
             .clip(RoundedCornerShape(10.dp))
             .background(AppColors.blue_violet_gradient)
             .fillMaxWidth()
-            .requiredHeight(120.dp) // Total height including padding
-            .clipToBounds() // Allow image overflow
+            .requiredHeight(120.dp)
+            .clipToBounds()
     ) {
         Image(
-            painter = painterResource(id = R.drawable.heroimage), // Your AI bot drawable
+            painter = painterResource(id = R.drawable.heroimage),
             contentDescription = "AI Assistant",
-            contentScale = ContentScale.Fit, // Preserve aspect ratio
+            contentScale = ContentScale.Fit,
             modifier = Modifier
-                .align(Alignment.TopEnd) // Align top-right
-                .size(width = 190.dp, height = 190.dp) // Match/exceed visible height
-                .padding(end = 5.dp) // Match horizontal padding
+                .align(Alignment.TopEnd)
+                .size(width = 190.dp, height = 190.dp)
+                .padding(end = 5.dp)
                 .zIndex(1f)
-                .clipToBounds() // Allow top overflow
+                .clipToBounds()
         )
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .width(IntrinsicSize.Max)
-                .padding(start = 15.dp, end = 8.dp, top = 20.dp, bottom = 20.dp) ,// Match inner padding
+                .padding(start = 15.dp, end = 8.dp, top = 20.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.Start
         ) {
@@ -457,40 +842,36 @@ fun CurrentMeditation() {
                 color = TextWhite.copy(alpha = 0.8f),
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(12.dp)) // Space between text and button
-
+            Spacer(modifier = Modifier.height(12.dp))
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .width(120.dp) // fixed width to help center the content
-                    .height(36.dp) // increase height slightly for better tap area
+                    .width(120.dp)
+                    .height(36.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(AppColors.color_Gray_White)
-                    .padding(horizontal = 8.dp) // internal padding to center nicely
+                    .padding(horizontal = 8.dp)
                     .zIndex(1f)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_play),
                     contentDescription = "Try Now",
                     tint = AppColors.color_violet,
-                    modifier = Modifier
-                        .size(11.dp) // icon size matches text height roughly
+                    modifier = Modifier.size(11.dp)
                 )
-                Spacer(modifier = Modifier.width(6.dp)) // spacing between icon and text
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = "Try Now",
                     color = AppColors.color_violet,
-                    fontSize = 14.sp // ensure it's balanced with icon
+                    fontSize = 14.sp
                 )
             }
-
-
         }
     }
 }
 
-
+// FeatureSection composable
 @Composable
 fun FeatureSection(features: List<Feature>, navController: NavController, userId: Int) {
     Column(
@@ -542,6 +923,7 @@ fun FeatureSection(features: List<Feature>, navController: NavController, userId
     }
 }
 
+// FeatureItem composable
 @Composable
 fun FeatureItem(
     feature: Feature,
@@ -631,7 +1013,7 @@ fun FeatureItem(
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-@Preview(widthDp = 390, heightDp = 920)
+@Preview(widthDp = 390, heightDp = 1420)
 @Composable
 private fun DashboardScreenPreview() {
     Dashboard(navController = NavController(LocalContext.current), userId = 1)

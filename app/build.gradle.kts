@@ -119,9 +119,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.mpandroidchart)
+    implementation(libs.androidx.ui.viewbinding)
+// or your Compose version    implementation(libs.ads.mobile.sdk)
 
 }
-}
-dependencies {
-    implementation(libs.ads.mobile.sdk)
 }
