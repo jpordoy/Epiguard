@@ -91,30 +91,31 @@ import com.epilabs.epiguard.ui.theme.TextWhite
 fun NewHeader(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .requiredWidth(width = 375.dp)
-            .background(AppColors.color_Gray_50)
+            .background(AppColors.color_white)
+            .fillMaxWidth()
     ) {
         Box(
             modifier = Modifier
-                .requiredWidth(width = 375.dp)
                 .requiredHeight(height = 140.dp)
+                .fillMaxWidth()
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = Color.White)
+                    .background(Color.White)
             )
             Box(
                 modifier = Modifier
-                    .align(alignment = Alignment.TopStart)
-                    .offset(x = 25.dp, y = 25.dp)
-                    .requiredWidth(width = 324.dp)
+                    .align(Alignment.TopStart)
+                    .offset(y = 25.dp)
+                    .padding(horizontal = 16.dp)
                     .requiredHeight(height = 35.dp)
+                    .fillMaxWidth()
             ) {
                 Box(
                     modifier = Modifier
-                        .align(alignment = Alignment.TopStart)
-                        .offset(x = 289.dp, y = 0.dp)
+                        .align(Alignment.TopStart)
+                        .offset(x = 320.dp, y = 0.dp)
                         .requiredSize(size = 35.dp)
                 ) {
                     Image(
@@ -122,7 +123,7 @@ fun NewHeader(modifier: Modifier = Modifier) {
                         contentDescription = "pexels-christina-morillo-1181690 1",
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(shape = CircleShape)
+                            .clip(CircleShape)
                     )
                 }
                 Text(
@@ -130,13 +131,14 @@ fun NewHeader(modifier: Modifier = Modifier) {
                     color = Color(0xff343c6a),
                     textAlign = TextAlign.Center,
                     style = TextStyle(fontSize = 20.sp),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .width(350.dp)
                 )
                 Image(
                     painter = painterResource(id = R.drawable.menu1),
                     contentDescription = "Group 692",
                     modifier = Modifier
-                        .align(alignment = Alignment.TopStart)
+                        .align(Alignment.TopStart)
                         .offset(x = 0.dp, y = 10.dp)
                         .requiredWidth(width = 14.dp)
                         .requiredHeight(height = 18.dp)
@@ -144,20 +146,17 @@ fun NewHeader(modifier: Modifier = Modifier) {
             }
             Box(
                 modifier = Modifier
-                    .align(alignment = Alignment.TopStart)
-                    .offset(x = 25.dp, y = 80.dp)
-                    .requiredWidth(width = 325.dp)
+                    .align(Alignment.TopStart)
+                    .offset(y = 80.dp)
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
                     .requiredHeight(height = 40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(AppColors.color_Gray_50)
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clip(shape = RoundedCornerShape(40.dp))
-                        .background(color = Color(0xfff5f7fa))
-                )
-                Box(
-                    modifier = Modifier
-                        .align(alignment = Alignment.TopStart)
+                        .align(Alignment.TopStart)
                         .offset(x = 19.dp, y = 12.dp)
                         .requiredWidth(width = 158.dp)
                         .requiredHeight(height = 16.dp)
@@ -165,21 +164,22 @@ fun NewHeader(modifier: Modifier = Modifier) {
                     Image(
                         painter = painterResource(id = R.drawable.search_normal),
                         contentDescription = "magnifying-glass 1",
-                        colorFilter = ColorFilter.tint(Color(0xff718ebf))
+                        colorFilter = ColorFilter.tint(Color(0xff718ebf)),
+                        modifier = Modifier
+                            .size(16.dp)
                     )
                     Text(
                         text = "Search for something",
                         color = Color(0xff8ba3cb),
                         style = TextStyle(fontSize = 13.sp),
                         modifier = Modifier
-                            .fillMaxSize()
-                            .offset(x = 44.dp, y = 0.dp)
+                            .offset(x = 24.dp, y = 0.dp)
                     )
                 }
             }
         }
-    }}
-
+    }
+}
 // Data class for half-circle progress bar
 data class ProgressBarData(
     val percentage: Float, // 0.0f to 100.0f
@@ -202,7 +202,6 @@ fun HalfCircleProgressBar(
             .padding(8.dp) // Reduced outer padding for tighter fit
             .clip(RoundedCornerShape(10.dp))
             .background(AppColors.color_white)
-            .shadow(elevation = 0.5.dp, shape = RoundedCornerShape(10.dp))
             .padding(12.dp), // Reduced inner padding
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -299,7 +298,6 @@ fun SeizureFreeDaysDisplay(
             .padding(8.dp) // Reduced outer padding for tighter fit
             .clip(RoundedCornerShape(12.dp))
             .background(AppColors.color_Gray_White)
-            .shadow(elevation = 0.5.dp, shape = RoundedCornerShape(11.dp))
             .padding(12.dp), // Reduced inner padding
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -486,6 +484,7 @@ fun SeizureStackedBarChart(
                         .align(Alignment.TopStart)
                         .offset(x = 20.dp, y = 11.dp)
                         .requiredHeight(142.5.dp) // 171.dp - 28.5.dp for labels
+                        .width(100.dp)
                 ) {
                     repeat(7) { index ->
                         HorizontalDivider(
@@ -501,7 +500,6 @@ fun SeizureStackedBarChart(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .offset(x = 30.dp, y = 11.dp)
-                        .fillMaxWidth()
                         .requiredHeight(142.5.dp)
                 ) {
                     items(7) { index ->
@@ -583,11 +581,12 @@ fun Dashboard(navController: NavController, userId: Int) {
         }
     }
 
-    Box(modifier = Modifier.background(AppColors.color_Gray_50).fillMaxSize()) {
+    Box(modifier = Modifier.background(AppColors.color_Gray_50).fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .verticalScroll(scrollState)
                 .padding(bottom = 80.dp) // Space for BottomMenu
+                .fillMaxWidth()
         ) {
             NewHeader()
             GreetingText(firstName = firstName.value)
@@ -601,23 +600,23 @@ fun Dashboard(navController: NavController, userId: Int) {
                         darkColor = BlueViolet1,
                         mediumColor = BlueViolet2,
                         lightColor = BlueViolet3,
-                        route = "model_classification/$userId"
+                        route = "IpMjpegDetector/$userId"
                     ),
                     Feature(
-                        title = "Tracker and Analytics",
+                        title = "Wireless Camera",
                         imageId = R.drawable.analytics,
                         darkColor = LightGreen1,
                         mediumColor = LightGreen2,
                         lightColor = LightGreen3,
-                        route = "add_contact/$userId"
+                        route = "ip_webcam"
                     ),
                     Feature(
-                        title = "Test Lab",
+                        title = "Seizure Detector Lab",
                         imageId = R.drawable.ai,
                         darkColor = OrangeYellow1,
                         mediumColor = OrangeYellow2,
                         lightColor = OrangeYellow3,
-                        route = "view_contacts/$userId"
+                        route = "ip_webcam_connector/$userId"
                     ),
                     Feature(
                         title = "Contacts and Alerts",
@@ -679,6 +678,8 @@ fun Dashboard(navController: NavController, userId: Int) {
                 )
             }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+
         BottomMenu(
             items = listOf(
                 BottomMenuContent("Home", R.drawable.ic_home),
@@ -1100,7 +1101,7 @@ fun FeatureItem(
                     painter = painterResource(id = feature.imageId),
                     contentDescription = "${feature.title} image",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.size(110.dp)
+                    modifier = Modifier.size(125.dp)
                 )
                 Text(
                     text = feature.title,

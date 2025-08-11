@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 object AppColors {
+    val blackbackground = Color(0xFF202326)
     val color_900 = Color(0xFF262626) // Gray/900, used for icons
     val color_Gray_900 = Color(0xFF262626) // Alias for color_900
     val color_Primary_600 = Color(0xFF2A4ECA) // For "Sign Up" text
@@ -32,7 +33,8 @@ object AppColors {
     val test1 = Color(0xFF5861E2)
     val navbar = Color(0xFF539DF3)
     val navbar2 = Color(0xFF539DF3)
-    // Linear gradient for blue-violet
+    // Linear gradient for blue-violet#
+    val secondCirlce = Color(0xFF606873)
     val blue_violet_gradient = Brush.linearGradient(
         colors = listOf(
             Color(0xFF4552CB), // 30% start

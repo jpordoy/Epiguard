@@ -121,6 +121,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.mpandroidchart)
     implementation(libs.androidx.ui.viewbinding)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 // or your Compose version    implementation(libs.ads.mobile.sdk)
 
 }

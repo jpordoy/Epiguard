@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,13 +28,16 @@ import com.epilabs.epiguard.components.auth_component.SignInForm
 import com.epilabs.epiguard.components.contacts_component.AddContactDebugForm
 import com.epilabs.epiguard.components.contacts_component.UpdateContactForm
 import com.epilabs.epiguard.components.contacts_component.ViewContactScreen
+import com.epilabs.epiguard.components.seizure_component.IpMjpegDetector
+import com.epilabs.epiguard.components.seizure_component.IpWebcamConnector
+import com.epilabs.epiguard.components.seizure_component.RemoteSeizureDetector
+import com.epilabs.epiguard.components.seizure_component.SeizureDetector
 import com.epilabs.epiguard.components.testlab_component.MobileUI
 import com.epilabs.epiguard.components.testlab_component.ModelClassificationScreen
 import com.epilabs.epiguard.components.testlab_component.VideoPlayerScreen
 import com.epilabs.epiguard.components.user_component.AddUserProfileForm
 import com.epilabs.epiguard.components.user_component.UpdateUserProfileForm
 import com.epilabs.epiguard.components.user_component.ViewUserProfiles
-import com.epilabs.epiguard.database.DatabaseConnector
 import com.epilabs.epiguard.ui.components.Frame3
 import com.epilabs.epiguard.utils.saveImageToInternalStorage
 import com.epilabs.epiguard.viewmodel.ContactViewModel
@@ -50,31 +54,23 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val profileViewModel: ProfileViewModel = viewModel()
             val contactViewModel: ContactViewModel = viewModel()
-            var imageTarget by remember { mutableStateOf("profile") }
 
-            val photoPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-                if (uri != null) {
-                    try {
-                        val filePath = saveImageToInternalStorage(this, uri)
-                        Log.i(TAG, "Image saved to: $filePath")
-                        when (imageTarget) {
-                            "profile" -> profileViewModel.updateProfileImage(filePath)
-                            "contact" -> contactViewModel.updateContactImage(filePath)
-                        }
-                        Toast.makeText(this, "Image saved successfully", Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error saving image: ${e.message}")
-                        Toast.makeText(this, "Failed to save image: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Log.w(TAG, "No image selected")
-                    Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show()
-                }
+            // Photo picker logic
+            var imageTarget by remember { mutableStateOf("profile") }
+            val photoPickerLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.PickVisualMedia()
+            ) { uri ->
+                handlePhotoPickerResult(uri, imageTarget, profileViewModel, contactViewModel)
             }
 
-            NavHost(navController, startDestination = "sign_in") {
-                composable("sign_in") { SignInForm(navController) }
-                composable("register") { RegisterForm(navController) }
+            NavHost(navController = navController, startDestination = "sign_in") {
+                // Authentication Routes
+                composable("sign_in") {
+                    SignInForm(navController)
+                }
+                composable("register") {
+                    RegisterForm(navController)
+                }
                 composable(
                     route = "otp_verification/{email}/{otp}",
                     arguments = listOf(
@@ -88,15 +84,40 @@ class MainActivity : ComponentActivity() {
                         expectedOTP = backStackEntry.arguments?.getString("otp") ?: ""
                     )
                 }
+
+                // Dashboard Route
                 composable(
                     route = "dashboard/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
                 ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
                     Dashboard(
                         navController = navController,
-                        userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                        userId = userId
                     )
                 }
+
+                // Seizure Detection Routes
+                composable(
+                    route = "seizure_detector/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    SeizureDetector(navController, userId)
+                }
+                // IP Webcam route with userId parameter
+                composable(
+                    route = "ip_webcam_connector/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    IpWebcamConnector(
+                        modifier = Modifier.fillMaxSize(),
+                        userId = userId
+                    )
+                }
+
+                // Video and Model Routes
                 composable(
                     route = "upload_video/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
@@ -104,6 +125,22 @@ class MainActivity : ComponentActivity() {
                     val userId = backStackEntry.arguments?.getInt("userId") ?: -1
                     MobileUI(userId = userId, navController = navController)
                 }
+                composable(
+                    route = "remote_seizure_detector/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    RemoteSeizureDetector(navController, userId, Modifier.fillMaxSize())
+                }
+
+                composable(
+                    route = "IpMjpegDetector/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    IpMjpegDetector()
+                }
+
                 composable(
                     route = "video_player/{videoId}/{userId}",
                     arguments = listOf(
@@ -117,13 +154,30 @@ class MainActivity : ComponentActivity() {
                     VideoPlayerScreen(navController = navController, videoId = videoId, viewModel = viewModel)
                 }
                 composable(
+                    route = "model_classification/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    ModelClassificationScreen(userId = userId, navController = navController)
+                }
+                composable(
+                    route = "model_details/{modelName}",
+                    arguments = listOf(navArgument("modelName") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val modelName = backStackEntry.arguments?.getString("modelName") ?: ""
+                    Frame3(navController = navController, modelName = modelName)
+                }
+
+                // User Profile Routes
+                composable(
                     route = "add_user_profile/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
                 ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
                     AddUserProfileForm(
                         navController = navController,
-                        userId = backStackEntry.arguments?.getInt("userId") ?: -1,
-                        imageLauncher = { intent ->
+                        userId = userId,
+                        imageLauncher = {
                             imageTarget = "profile"
                             photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
@@ -131,26 +185,13 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 composable(
-                    route = "add_contact/{userId}",
-                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
-                ) { backStackEntry ->
-                    AddContactDebugForm(
-                        navController = navController,
-                        userID = backStackEntry.arguments?.getInt("userId") ?: 0,
-                        imageLauncher = { intent ->
-                            imageTarget = "contact"
-                            photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                        },
-                        contactViewModel = contactViewModel
-                    )
-                }
-                composable(
                     route = "view_user_profile/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
                 ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
                     ViewUserProfiles(
                         navController = navController,
-                        userId = backStackEntry.arguments?.getInt("userId") ?: -1,
+                        userId = userId,
                         profileViewModel = profileViewModel
                     )
                 }
@@ -175,7 +216,7 @@ class MainActivity : ComponentActivity() {
                         phone = backStackEntry.arguments?.getString("phone"),
                         dob = backStackEntry.arguments?.getString("dateOfBirth"),
                         bio = backStackEntry.arguments?.getString("bio"),
-                        imageLauncher = { intent ->
+                        imageLauncher = {
                             imageTarget = "profile"
                             photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
@@ -183,28 +224,32 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                composable("model_classification/{userId}") { backStackEntry ->
-                    val userId = backStackEntry.arguments?.getString("userId")?.toIntOrNull() ?: 1
-                    ModelClassificationScreen(userId = userId, navController = navController)
+                // Contact Routes
+                composable(
+                    route = "add_contact/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+                    AddContactDebugForm(
+                        navController = navController,
+                        userID = userId,
+                        imageLauncher = {
+                            imageTarget = "contact"
+                            photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        },
+                        contactViewModel = contactViewModel
+                    )
                 }
-
-
                 composable(
                     route = "view_contacts/{userId}",
                     arguments = listOf(navArgument("userId") { type = NavType.IntType })
                 ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getInt("userId") ?: -1
                     ViewContactScreen(
-                        userID = backStackEntry.arguments?.getInt("userId") ?: -1,
+                        userID = userId,
                         navController = navController,
                         modifier = Modifier
                     )
-                }
-                composable(
-                    route = "model_details/{modelName}",
-                    arguments = listOf(navArgument("modelName") { type = NavType.StringType })
-                ) { backStackEntry ->
-                    val modelName = backStackEntry.arguments?.getString("modelName") ?: ""
-                    Frame3(navController = navController, modelName = modelName)
                 }
                 composable(
                     route = "update_contact/{userId}/{contactId}/{profileImage}/{firstname}/{lastname}/{contact}/{email}/{alertType}/{about}/{epilepsyFirstAid}/{cPR}/{mentalHealthFirstAid}/{status}/{primaryCarer}/{relationship}/{timestamp}",
@@ -245,7 +290,7 @@ class MainActivity : ComponentActivity() {
                         primaryCarer = backStackEntry.arguments?.getString("primaryCarer"),
                         relationship = backStackEntry.arguments?.getString("relationship"),
                         timestamp = backStackEntry.arguments?.getString("timestamp"),
-                        imageLauncher = { intent ->
+                        imageLauncher = {
                             imageTarget = "contact"
                             photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
@@ -256,5 +301,28 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private val dbHandler by lazy { DatabaseConnector(this) }
+    private fun handlePhotoPickerResult(
+        uri: android.net.Uri?,
+        imageTarget: String,
+        profileViewModel: ProfileViewModel,
+        contactViewModel: ContactViewModel
+    ) {
+        if (uri != null) {
+            try {
+                val filePath = saveImageToInternalStorage(this, uri)
+                Log.i(TAG, "Image saved to: $filePath")
+                when (imageTarget) {
+                    "profile" -> profileViewModel.updateProfileImage(filePath)
+                    "contact" -> contactViewModel.updateContactImage(filePath)
+                }
+                Toast.makeText(this, "Image saved successfully", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error saving image: ${e.message}")
+                Toast.makeText(this, "Failed to save image: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Log.w(TAG, "No image selected")
+            Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show()
+        }
+    }
 }

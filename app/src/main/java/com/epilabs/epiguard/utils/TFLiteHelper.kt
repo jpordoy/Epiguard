@@ -2,20 +2,21 @@ package com.epilabs.epiguard.utils
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import com.epilabs.epiguard.database.DatabaseConnector
+import com.epilabs.epiguard.models.PredictionLog
 import com.epilabs.epiguard.models.RawDataModel
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.image.ImageProcessor
-import org.tensorflow.lite.support.image.ops.ResizeOp
-import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.DataType
+import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.image.ImageProcessor
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.ResizeOp
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
 import kotlin.math.exp
-import com.epilabs.epiguard.models.PredictionLog
 
 class TFLiteHelper(context: Context) {
 
@@ -24,11 +25,11 @@ class TFLiteHelper(context: Context) {
     val predictionLogs = mutableListOf<PredictionLog>()
     private var predictionId = 0
     private val dbHandler = DatabaseConnector(context)
-    private val labels = arrayOf("Not Seizure", "Seizure")
+    private val labels = arrayOf("Seizure", "Not Seizure")  // Swapped as per previous
 
     private val imageProcessor = ImageProcessor.Builder()
         .add(ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
-        .add(NormalizeOp(0f, 255f))
+        .add(NormalizeOp(0f, 255f))  // Consider changing if model needs different norm (e.g., add mean/std ops)
         .build()
 
     init {
@@ -41,24 +42,39 @@ class TFLiteHelper(context: Context) {
         interpreter = Interpreter(modelBuffer)
     }
 
-    fun addFrameAndPredict(bitmap: Bitmap, userId: Int, seizureID: Int? = null): FloatArray? {
+    fun addFrameAndPredict(bitmap: Bitmap?, userId: Int, seizureID: Int? = null): FloatArray? {
+        if (bitmap == null) {
+            Log.e("TFLiteDebug", "Null bitmap skipped")
+            return null
+        }
         frameBuffer.add(bitmap)
         if (frameBuffer.size < 10) return null
+
+        // Debug: Check if frames are varying (log simple hash of first pixel or size)
+        Log.d("TFLiteDebug", "Frame buffer size: ${frameBuffer.size}. Latest bitmap width/height: ${bitmap.width}x${bitmap.height}. Pixel sample: ${bitmap.getPixel(0, 0)}")
 
         val result = runInference(frameBuffer.toList())
         frameBuffer.removeAt(0)
 
+        // Debug: Log raw logits before softmax
+        Log.d("TFLiteDebug", "Raw logits: ${result[0]}, ${result[1]}")
+
         val softmaxed = softmax(result)
-        val predictedIndex = softmaxed.indices.maxByOrNull { softmaxed[it] } ?: 0
+        val reversedSoftmaxed = floatArrayOf(softmaxed[1], softmaxed[0])  // Reverse to match labels
+
+        // Debug: Log after softmax
+        Log.d("TFLiteDebug", "Softmaxed probs (reversed): Seizure ${reversedSoftmaxed[0]}, Not Seizure ${reversedSoftmaxed[1]}")
+
+        val predictedIndex = reversedSoftmaxed.indices.maxByOrNull { reversedSoftmaxed[it] } ?: 0
         val label = labels[predictedIndex]
-        val confidence = softmaxed[predictedIndex]
+        val confidence = reversedSoftmaxed[predictedIndex]
 
         val log = PredictionLog(
             id = predictionId++,
             timestamp = System.currentTimeMillis(),
             predictedLabel = label,
             confidence = confidence,
-            rawScores = softmaxed
+            rawScores = reversedSoftmaxed
         )
         predictionLogs.add(log)
 
@@ -69,12 +85,12 @@ class TFLiteHelper(context: Context) {
             seizureID = seizureID,
             timestamp = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(log.timestamp),
             classificationResult = label,
-            numberOfClassifiedTimesteps = 10, // Model uses 10 frames
+            numberOfClassifiedTimesteps = 10,
             predictedClass = label
         )
         dbHandler.insertRawData(rawData)
 
-        return softmaxed
+        return reversedSoftmaxed
     }
 
     private fun runInference(frames: List<Bitmap>): FloatArray {
