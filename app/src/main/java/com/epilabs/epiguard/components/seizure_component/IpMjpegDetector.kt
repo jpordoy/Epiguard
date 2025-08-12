@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -22,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,16 +50,11 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.text.SimpleDateFormat
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicReference
 
-/**
- * MJPEG composable that decodes frames from an MJPEG HTTP stream and runs your TFLite model on them.
- *
- * Usage:
- * IpMjpegDetector(streamUrl = "http://192.168.0.128:8080/video", userId = 1)
- *
- * NOTE: Add android.permission.INTERNET to the manifest.
- */
+data class PredictionEntry(val timestampRange: String, val label: String, val confidence: Float)
 
 @Composable
 fun IpMjpegDetector(
@@ -72,120 +70,147 @@ fun IpMjpegDetector(
 
     // UI state
     var latestBitmap by remember { mutableStateOf<Bitmap?>(null) }
-    var predictionText by remember { mutableStateOf("Waiting for frames...") }
     var streaming by remember { mutableStateOf(false) }
+    val predictions = remember { mutableStateListOf<PredictionEntry>() }
 
-    // Jobs to run the streaming coroutine and inference coroutine
+    // Jobs for streaming and inference
     val streamJob = remember { mutableStateOf<Job?>(null) }
     val inferenceJob = remember { mutableStateOf<Job?>(null) }
 
-    // Atomic reference used to give inference coroutine the most recent frame without locking
+    // Atomic reference for latest frame
     val latestFrameRef = remember { AtomicReference<Bitmap?>(null) }
 
-    // Inference settings (tweak these if you want)
-    val inferenceIntervalMs = 200L                    // run model every 200ms (~5/sec)
-    val consecutiveTriggerCount = 3                  // trigger when N consecutive positives
-    val seizureThreshold = 0.8f                       // probability threshold for "positive"
-    val predictionHistory = remember { ArrayDeque<Boolean>() }
+    // Inference settings
+    val inferenceIntervalMs = 5000L // 5 seconds
+    val maxRetries = 3 // Retry attempts for stream connection
 
-    // Start stream function (decoding only)
+    // Start stream function
     fun startStream(url: String) {
         if (streaming) return
         streaming = true
-        predictionText = "Connecting..."
+        connectedUrl = url
+        Log.d("IpMjpegDetector", "Starting stream: $url")
 
-        // Decode/display coroutine: reads MJPEG frames as fast as possible and updates UI
         streamJob.value = CoroutineScope(Dispatchers.IO).launch {
             var connection: HttpURLConnection? = null
             var input: InputStream? = null
-            try {
-                val u = URL(url)
-                connection = (u.openConnection() as HttpURLConnection).apply {
-                    readTimeout = 15_000
-                    connectTimeout = 10_000
-                    requestMethod = "GET"
-                    doInput = true
-                    connect()
-                }
+            var retryCount = 0
 
-                input = connection.inputStream
-                val mjpegReader = MjpegStreamReader(input)
-
-                // Read frames in a tight loop, update UI and atomic ref
-                while (isActive && streaming) {
-                    val frameBitmap = mjpegReader.readFrameBitmap() ?: continue
-
-                    // Update UI frame (Compose state) quickly on main thread
-                    withContext(Dispatchers.Main) {
-                        latestBitmap = frameBitmap
+            while (isActive && streaming && retryCount < maxRetries) {
+                try {
+                    val u = URL(url)
+                    connection = (u.openConnection() as HttpURLConnection).apply {
+                        readTimeout = 15_000
+                        connectTimeout = 10_000
+                        requestMethod = "GET"
+                        doInput = true
+                        connect()
                     }
 
-                    // Update atomic ref used by inference loop
-                    latestFrameRef.set(frameBitmap)
-                }
-            } catch (e: Exception) {
-                Log.e("IpMjpegDetector", "Stream error: ${e.message}", e)
-                withContext(Dispatchers.Main) {
-                    predictionText = "Stream error: ${e.message}"
-                }
-            } finally {
-                input?.close()
-                connection?.disconnect()
-                withContext(Dispatchers.Main) {
-                    streaming = false
-                    connectedUrl = null
+                    input = connection.inputStream
+                    val mjpegReader = MjpegStreamReader(input)
+                    var lastFrameTime = System.currentTimeMillis()
+                    var frameCount = 0
+
+                    while (isActive && streaming) {
+                        val frameBitmap = mjpegReader.readFrameBitmap() ?: continue
+                        frameCount++
+                        val currentTime = System.currentTimeMillis()
+                        if (currentTime - lastFrameTime >= 1000) {
+                            Log.d("IpMjpegDetector", "Frame rate: ${(frameCount * 1000.0 / (currentTime - lastFrameTime)).toInt()} FPS")
+                            frameCount = 0
+                            lastFrameTime = currentTime
+                        }
+
+                        // Create separate copies for UI and inference
+                        val uiBitmap = frameBitmap.copy(Bitmap.Config.ARGB_8888, false)
+                        val inferenceBitmap = frameBitmap.copy(Bitmap.Config.ARGB_8888, false)
+                        frameBitmap.recycle() // Recycle original immediately
+
+                        withContext(Dispatchers.Main) {
+                            latestBitmap?.recycle() // Recycle old UI bitmap
+                            latestBitmap = uiBitmap
+                        }
+                        latestFrameRef.set(inferenceBitmap)
+                        retryCount = 0 // Reset retries on successful frame
+                    }
+                } catch (e: Exception) {
+                    Log.e("IpMjpegDetector", "Stream error: ${e.message}", e)
+                    retryCount++
+                    if (retryCount < maxRetries) {
+                        Log.d("IpMjpegDetector", "Retrying stream connection ($retryCount/$maxRetries)")
+                        input?.close()
+                        connection?.disconnect()
+                        delay(1000L) // Wait before retry
+                        continue
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            streaming = false
+                            connectedUrl = null
+                            predictions.add(PredictionEntry(
+                                timestampRange = "${SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(System.currentTimeMillis())} - Error",
+                                label = "Stream Disconnected",
+                                confidence = 0f
+                            ))
+                        }
+                    }
+                } finally {
+                    input?.close()
+                    connection?.disconnect()
                 }
             }
         }
 
-        // Inference coroutine: runs at a reduced rate and reads latestFrameRef
+        // Inference coroutine with fixed 5-second schedule
         inferenceJob.value = CoroutineScope(Dispatchers.Default).launch {
+            var nextInferenceTime = System.currentTimeMillis()
             while (isActive && streaming) {
-                try {
-                    val frame = latestFrameRef.get()
-                    if (frame != null) {
-                        // Make a copy to avoid potential concurrent bitmap issues
-                        val copy = frame.copy(frame.config ?: Bitmap.Config.ARGB_8888, true)
+                val startTime = System.currentTimeMillis()
+                Log.d("IpMjpegDetector", "Starting inference cycle at $startTime")
 
+                try {
+                    val frame = latestFrameRef.getAndSet(null) // Clear reference after use
+                    if (frame != null && !frame.isRecycled) {
                         val result = try {
-                            tfliteHelper.addFrameAndPredict(copy, userId)
+                            tfliteHelper.addFrameAndPredict(frame, userId)
                         } catch (e: Exception) {
                             Log.e("IpMjpegDetector", "Inference error: ${e.message}", e)
                             null
+                        } finally {
+                            if (!frame.isRecycled) frame.recycle() // Recycle after inference
                         }
 
-                        result?.let {
-                            // result assumed to be [NotSeizureProb, SeizureProb] as in your TFLiteHelper return
-                            val notSeizureProb = it[0]
-                            val seizureProb = it[1]
+                        if (result != null) {
+                            val seizureProb = result[0]
+                            val notSeizureProb = result[1]
+                            val predictedIndex = if (seizureProb > notSeizureProb) 0 else 1
+                            val label = if (predictedIndex == 0) "Seizure" else "Not Seizure"
+                            val confidence = if (predictedIndex == 0) seizureProb else notSeizureProb
 
-                            // Rolling boolean history for consecutive detection logic
-                            val isPositive = seizureProb >= seizureThreshold
-                            predictionHistory.add(isPositive)
-                            if (predictionHistory.size > consecutiveTriggerCount) {
-                                predictionHistory.removeFirst()
-                            }
-
-                            val triggered = (predictionHistory.size == consecutiveTriggerCount)
-                                    && predictionHistory.all { it }
-
-                            val text = if (triggered) {
-                                "SEIZURE DETECTED (p=%.2f)".format(seizureProb)
-                            } else {
-                                "Not Seizure: %.2f | Seizure: %.2f".format(notSeizureProb, seizureProb)
-                            }
+                            val formatter = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                            val timestampRange = "${formatter.format(startTime - inferenceIntervalMs)} - ${formatter.format(startTime)}"
 
                             withContext(Dispatchers.Main) {
-                                predictionText = text
+                                predictions.add(PredictionEntry(timestampRange, label, confidence))
+                                Log.d("IpMjpegDetector", "Prediction: $timestampRange, $label, Confidence: $confidence")
                             }
+                        } else {
+                            Log.d("IpMjpegDetector", "No valid inference result")
                         }
+                    } else {
+                        Log.d("IpMjpegDetector", "No frame available for inference or frame recycled")
                     }
                 } catch (e: Exception) {
                     Log.e("IpMjpegDetector", "Inference loop error: ${e.message}", e)
                 }
 
-                // Sleep until next inference; does not block display loop at all
-                delay(inferenceIntervalMs)
+                // Adjust delay to maintain 5-second schedule
+                val elapsedTime = System.currentTimeMillis() - startTime
+                val adjustedDelay = (inferenceIntervalMs - elapsedTime).coerceAtLeast(0)
+                nextInferenceTime += inferenceIntervalMs
+                val timeToNext = (nextInferenceTime - System.currentTimeMillis()).coerceAtLeast(0)
+                Log.d("IpMjpegDetector", "Inference took $elapsedTime ms, delaying $timeToNext ms")
+                delay(timeToNext)
             }
         }
     }
@@ -197,8 +222,11 @@ fun IpMjpegDetector(
         inferenceJob.value?.cancel()
         inferenceJob.value = null
         streaming = false
-        predictionText = "Stopped"
+        latestFrameRef.get()?.recycle()
         latestFrameRef.set(null)
+        latestBitmap?.recycle()
+        latestBitmap = null
+        Log.d("IpMjpegDetector", "Stream stopped")
     }
 
     DisposableEffect(Unit) {
@@ -268,84 +296,133 @@ fun IpMjpegDetector(
             contentAlignment = Alignment.Center
         ) {
             latestBitmap?.let { bmp ->
-                // Use asImageBitmap to display
-                Image(
-                    bitmap = bmp.asImageBitmap(),
-                    contentDescription = "Latest frame",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
+                if (!bmp.isRecycled) {
+                    Image(
+                        bitmap = bmp.asImageBitmap(),
+                        contentDescription = "Latest frame",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit
+                    )
+                } else {
+                    Text(text = "Frame recycled", color = Color.White)
+                }
             } ?: run {
                 Text(text = "No frame yet", color = Color.White)
             }
         }
 
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Prediction Table
+        Text(
+            text = "Prediction History",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF333333)
+        )
+
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(text = predictionText, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+        ) {
+            if (predictions.isEmpty()) {
+                item {
+                    Text(
+                        text = "No predictions yet",
+                        fontSize = 14.sp,
+                        color = Color(0xFF333333),
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }
+            }
+            items(predictions.reversed()) { prediction ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = prediction.timestampRange,
+                        fontSize = 14.sp,
+                        color = Color(0xFF333333)
+                    )
+                    Text(
+                        text = "${prediction.label} (p=%.2f)".format(prediction.confidence),
+                        fontSize = 14.sp,
+                        color = if (prediction.label == "Seizure") Color(0xFFFF4444) else Color(0xFF333333)
+                    )
+                }
+            }
+        }
     }
 }
 
-/**
- * Simple MJPEG stream parser.
- * Reads bytes from an InputStream and extracts JPEG frames by searching for 0xFFD8...0xFFD9 markers.
- *
- * Note: This is a simple implementation intended for MJPEG streams served over HTTP (common for IP Webcam apps).
- * If your camera uses RTSP/H.264, use ExoPlayer / MediaCodec to decode frames instead.
- */
 private class MjpegStreamReader(private val input: InputStream) {
-    private val startMarker = byteArrayOf(0xFF.toByte(), 0xD8.toByte()) // SOI
-    private val endMarker = byteArrayOf(0xFF.toByte(), 0xD9.toByte())   // EOI
+    private val startMarker = byteArrayOf(0xFF.toByte(), 0xD8.toByte())
+    private val endMarker = byteArrayOf(0xFF.toByte(), 0xD9.toByte())
 
-    /**
-     * Read bytes until a full JPEG frame (SOI..EOI) is found. Returns the decoded Bitmap or null on EOF.
-     */
     fun readFrameBitmap(): Bitmap? {
-        try {
-            val buffer = ByteArrayOutputStream()
-            val readBuf = ByteArray(4096)
-            var foundStart = false
+        var buffer: ByteArrayOutputStream? = null
+        var retryCount = 0
+        val maxFrameRetries = 3
 
-            // Read until SOI
-            while (true) {
-                val r = input.read(readBuf)
-                if (r <= 0) return null
-                val chunk = readBuf.copyOf(r)
-                if (!foundStart) {
-                    val startIndex = indexOf(chunk, startMarker)
-                    if (startIndex >= 0) {
-                        // write from startMarker to buffer
-                        buffer.write(chunk, startIndex, chunk.size - startIndex)
-                        foundStart = true
-                        // check if EOI is in same chunk
-                        val endIndex = indexOf(chunk, endMarker, startIndex)
+        while (retryCount < maxFrameRetries) {
+            try {
+                buffer = ByteArrayOutputStream()
+                val readBuf = ByteArray(4096)
+                var foundStart = false
+
+                while (true) {
+                    val r = input.read(readBuf)
+                    if (r <= 0) {
+                        buffer.close()
+                        return null
+                    }
+                    val chunk = readBuf.copyOf(r)
+                    if (!foundStart) {
+                        val startIndex = indexOf(chunk, startMarker)
+                        if (startIndex >= 0) {
+                            buffer.write(chunk, startIndex, chunk.size - startIndex)
+                            foundStart = true
+                            val endIndex = indexOf(chunk, endMarker, startIndex)
+                            if (endIndex >= 0) {
+                                val len = endIndex + endMarker.size - startIndex
+                                val frameBytes = chunk.copyOfRange(startIndex, startIndex + len)
+                                buffer.close()
+                                return BitmapFactory.decodeByteArray(frameBytes, 0, frameBytes.size)
+                            }
+                        }
+                    } else {
+                        val endIndex = indexOf(chunk, endMarker)
                         if (endIndex >= 0) {
-                            // write up to endMarker and return
-                            val len = endIndex + endMarker.size - startIndex
-                            val frameBytes = chunk.copyOfRange(startIndex, startIndex + len)
+                            buffer.write(chunk, 0, endIndex + endMarker.size)
+                            val frameBytes = buffer.toByteArray()
+                            buffer.close()
                             return BitmapFactory.decodeByteArray(frameBytes, 0, frameBytes.size)
+                        } else {
+                            buffer.write(chunk)
                         }
                     }
-                } else {
-                    val endIndex = indexOf(chunk, endMarker)
-                    if (endIndex >= 0) {
-                        // write up to end marker
-                        buffer.write(chunk, 0, endIndex + endMarker.size)
-                        val frameBytes = buffer.toByteArray()
-                        return BitmapFactory.decodeByteArray(frameBytes, 0, frameBytes.size)
-                    } else {
-                        buffer.write(chunk)
-                    }
                 }
+            } catch (e: Exception) {
+                retryCount++
+                Log.w("MjpegStreamReader", "Error reading MJPEG frame (attempt $retryCount/$maxFrameRetries): ${e.message}")
+                buffer?.close()
+                if (retryCount < maxFrameRetries) {
+                    Thread.sleep(100) // Short delay before retry
+                    continue
+                }
+                Log.e("MjpegStreamReader", "Failed to read MJPEG frame after $maxFrameRetries attempts: ${e.message}", e)
+                return null
             }
-        } catch (e: Exception) {
-            // swallow and return null (caller handles)
-            Log.e("MjpegStreamReader", "Error reading MJPEG frame: ${e.message}", e)
-            return null
         }
+        return null
     }
 
-    // helper to find a byte pattern in a byte array, optionally starting from offset
     private fun indexOf(data: ByteArray, pattern: ByteArray, startOffset: Int = 0): Int {
         outer@ for (i in startOffset..data.size - pattern.size) {
             for (j in pattern.indices) {
@@ -360,6 +437,5 @@ private class MjpegStreamReader(private val input: InputStream) {
 @Preview(showBackground = true)
 @Composable
 private fun IpMjpegDetectorPreview() {
-    // Preview can't actually stream; it will show the layout only.
     IpMjpegDetector(initialUrl = "http://192.168.0.128:8080/video", userId = 0, modifier = Modifier.fillMaxSize())
 }

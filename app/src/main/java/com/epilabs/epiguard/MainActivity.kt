@@ -1,5 +1,6 @@
 package com.epilabs.epiguard
 
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -302,7 +303,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handlePhotoPickerResult(
-        uri: android.net.Uri?,
+        uri: Uri?,
         imageTarget: String,
         profileViewModel: ProfileViewModel,
         contactViewModel: ContactViewModel
